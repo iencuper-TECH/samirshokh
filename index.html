@@ -82,16 +82,53 @@
 
         if(!name || !phone) return alert("Заполните Имя и Номер!");
 
-        // Сохраняем пользователя или обновляем имя
+        // Ищем пользователя в базе (которого ВЫ добавили заранее)
         const userRef = db.collection("users").doc(phone);
         const userDoc = await userRef.get();
 
-        if (userDoc.exists) {
-            const data = userDoc.data();
-            if(data.deviceId && data.deviceId !== deviceId) {
-                return alert("Ошибка! Вход возможен только с вашего первого устройства.");
-            }
+        if (!userDoc.exists) {
+            // Если номера нет в базе - вход запрещен
+            return alert("ОШИБКА: Вашего номера нет в списке одобренных учеников. Обратитесь к администратору (SAMIRSHOKH).");
         }
+
+        const userData = userDoc.data();
+
+        // Проверка защиты устройства (Anti-Cheat)
+        if(userData.deviceId && userData.deviceId !== deviceId) {
+            return alert("Ошибка! Вход возможен только с вашего первого устройства.");
+        }
+        
+        // Если зашел первый раз - привязываем его имя и устройство к этому номеру
+        await userRef.set({
+            name: name,
+            deviceId: deviceId,
+            lastLogin: new Date()
+        }, { merge: true });
+
+        currentUser = { name, phone, subject: subj };
+
+        // Загрузка вопросов (далее как обычно...)
+        questions = [];
+        const snap = await db.collection("questions").where("subject", "==", subj).get();
+        snap.forEach(doc => questions.push(doc.data()));
+
+        if(questions.length === 0) return alert("В этом предмете еще нет вопросов!");
+
+        questions.sort(() => Math.random() - 0.5);
+        questions = questions.slice(0, 30); 
+
+        questions.forEach(q => {
+            let opts = q.options.map((opt, i) => ({ txt: opt, isCorrect: i === q.correct }));
+            opts.sort(() => Math.random() - 0.5); 
+            q.shuffledOptions = opts;
+        });
+
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('quizScreen').classList.remove('hidden');
+        renderGrid();
+        showQuestion(0);
+        startTimer();
+    }
         
         // Записываем/Обновляем данные ученика
         await userRef.set({
