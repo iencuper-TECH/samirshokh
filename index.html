@@ -12,13 +12,13 @@
         input, select { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
         .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .hidden { display: none; }
-        /* Стили для теста */
         .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 20px; }
         .grid-item { height: 35px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 12px; }
         .grid-item.done { background: var(--success); color: white; }
         .grid-item.active { border: 2px solid var(--primary); }
         .option { display: block; width: 100%; padding: 15px; margin: 8px 0; background: #f9fafb; border: 2px solid #f3f4f6; border-radius: 12px; text-align: left; cursor: pointer; }
         .option.selected { background: var(--primary); color: white; }
+        .dev-link { margin-top: 20px; display: block; color: #6366f1; text-decoration: none; font-size: 14px; font-weight: bold; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -35,21 +35,29 @@
             <option value="latin">Латинский язык</option>
             <option value="history">История</option>
             <option value="anatomy">Анатомия</option>
-            </select>
-        <button class="btn" onclick="tryLogin()">Начать экзамен</button>
+            <option value="medical">Медицинская профессия</option>
+            <option value="chemistry">Химия</option>
+            <option value="biology">Биология</option>
+            <option value="english">Английский язык</option>
+            <option value="uzbek">Узбекский язык</option>
+            <option value="histology">Гистология</option>
+            <option value="philosophy">Философия</option>
+        </select>
+        <button class="btn" id="startBtn" onclick="tryLogin()">Начать экзамен</button>
+        <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">👨‍💻 Написать разработчику</a>
     </div>
 
     <div id="quizScreen" class="card hidden">
         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
             <span id="timer" style="color:#ef4444; font-weight:bold; font-size:18px;">30:00</span>
-            <span id="qCounter">1 / 64</span>
+            <span id="qCounter">1 / 30</span>
         </div>
         <div class="grid" id="qGrid"></div>
         <p id="qText" style="font-weight:bold; text-align:left; min-height:60px;"></p>
         <div id="optionsArea"></div>
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn" style="background:#94a3b8" onclick="prevQ()">Nazad</button>
-            <button class="btn" onclick="nextQ()">Dalshe</button>
+            <button class="btn" style="background:#94a3b8" onclick="prevQ()">Назад</button>
+            <button class="btn" onclick="nextQ()">Дальше</button>
         </div>
         <button class="btn" style="background:var(--success); margin-top:15px" onclick="finish()">Завершить тест</button>
     </div>
@@ -64,105 +72,75 @@
 
 <script src="config.js"></script>
 <script>
-    let questions = [];
-    let answers = {};
-    let currentIdx = 0;
-    let timeLeft = 30 * 60; // 30 минут
-    let timerInterval;
-    let currentUser = {}; 
+    let questions = []; let answers = {}; let currentIdx = 0;
+    let timeLeft = 30 * 60; let timerInterval; let currentUser = {}; 
 
-    // Защита устройства
     let deviceId = localStorage.getItem('device_id') || 'dev_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('device_id', deviceId);
 
     async function tryLogin() {
-        const name = document.getElementById('nameInput').value;
-        const phone = document.getElementById('phoneInput').value;
+        const name = document.getElementById('nameInput').value.trim();
+        const phone = document.getElementById('phoneInput').value.trim();
         const subj = document.getElementById('subjectSelect').value;
+        const btn = document.getElementById('startBtn');
 
         if(!name || !phone) return alert("Заполните Имя и Номер!");
-
-        // Ищем пользователя в базе (которого ВЫ добавили заранее)
-        const userRef = db.collection("users").doc(phone);
-        const userDoc = await userRef.get();
-
-        if (!userDoc.exists) {
-            // Если номера нет в базе - вход запрещен
-            return alert("ОШИБКА: Вашего номера нет в списке одобренных учеников. Обратитесь к администратору (SAMIRSHOKH).");
-        }
-
-        const userData = userDoc.data();
-
-        // Проверка защиты устройства (Anti-Cheat)
-        if(userData.deviceId && userData.deviceId !== deviceId) {
-            return alert("Ошибка! Вход возможен только с вашего первого устройства.");
-        }
         
-        // Если зашел первый раз - привязываем его имя и устройство к этому номеру
-        await userRef.set({
-            name: name,
-            deviceId: deviceId,
-            lastLogin: new Date()
-        }, { merge: true });
+        btn.disabled = true;
+        btn.innerText = "Проверка доступа...";
 
-        currentUser = { name, phone, subject: subj };
+        try {
+            const userRef = db.collection("users").doc(phone);
+            const userDoc = await userRef.get();
 
-        // Загрузка вопросов (далее как обычно...)
-        questions = [];
-        const snap = await db.collection("questions").where("subject", "==", subj).get();
-        snap.forEach(doc => questions.push(doc.data()));
+            if (!userDoc.exists) {
+                alert("ОШИБКА: Вашего номера нет в списке одобренных. Свяжитесь с @dr_samirshokh");
+                btn.disabled = false; btn.innerText = "Начать экзамен";
+                return;
+            }
 
-        if(questions.length === 0) return alert("В этом предмете еще нет вопросов!");
+            const userData = userDoc.data();
+            if(userData.deviceId && userData.deviceId !== deviceId) {
+                alert("ОШИБКА: Вход разрешен только с вашего основного устройства!");
+                btn.disabled = false; btn.innerText = "Начать экзамен";
+                return;
+            }
 
-        questions.sort(() => Math.random() - 0.5);
-        questions = questions.slice(0, 30); 
+            // Обновляем данные (привязываем имя и устройство)
+            await userRef.set({ name: name, deviceId: deviceId, lastLogin: new Date() }, { merge: true });
+            currentUser = { name, phone, subject: subj };
 
-        questions.forEach(q => {
-            let opts = q.options.map((opt, i) => ({ txt: opt, isCorrect: i === q.correct }));
-            opts.sort(() => Math.random() - 0.5); 
-            q.shuffledOptions = opts;
-        });
+            // Загрузка вопросов
+            const snap = await db.collection("questions").where("subject", "==", subj).get();
+            if(snap.empty) {
+                alert("В этом предмете еще нет вопросов!");
+                btn.disabled = false; btn.innerText = "Начать экзамен";
+                return;
+            }
 
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('quizScreen').classList.remove('hidden');
-        renderGrid();
-        showQuestion(0);
-        startTimer();
-    }
-        
-        // Записываем/Обновляем данные ученика
-        await userRef.set({
-            name: name,
-            phone: phone,
-            deviceId: deviceId,
-            lastLogin: new Date()
-        }, { merge: true });
+            questions = [];
+            snap.forEach(doc => questions.push(doc.data()));
+            
+            // Мешаем и берем 30
+            questions.sort(() => Math.random() - 0.5);
+            questions = questions.slice(0, 30);
 
-        currentUser = { name, phone, subject: subj };
+            // Мешаем варианты ответов
+            questions.forEach(q => {
+                let opts = q.options.map((opt, i) => ({ txt: opt, isCorrect: i === q.correct }));
+                opts.sort(() => Math.random() - 0.5);
+                q.shuffledOptions = opts;
+            });
 
-        // Загрузка вопросов
-        questions = [];
-        const snap = await db.collection("questions").where("subject", "==", subj).get();
-        snap.forEach(doc => questions.push(doc.data()));
-
-        if(questions.length === 0) return alert("Вопросов нет!");
-
-        // Перемешиваем и берем 64
-        questions.sort(() => Math.random() - 0.5);
-        questions = questions.slice(0, 64);
-
-        // Перемешиваем ответы внутри вопросов
-        questions.forEach(q => {
-            let opts = q.options.map((opt, i) => ({ txt: opt, isCorrect: i === q.correct }));
-            opts.sort(() => Math.random() - 0.5); // Мешаем кнопки
-            q.shuffledOptions = opts;
-        });
-
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('quizScreen').classList.remove('hidden');
-        renderGrid();
-        showQuestion(0);
-        startTimer();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            renderGrid();
+            showQuestion(0);
+            startTimer();
+        } catch (e) {
+            alert("Ошибка сети: " + e.message);
+            btn.disabled = false; btn.innerText = "Начать экзамен";
+        }
     }
 
     function renderGrid() {
@@ -178,7 +156,6 @@
         const q = questions[idx];
         document.getElementById('qText').innerText = q.text;
         document.getElementById('qCounter').innerText = `${idx+1} / ${questions.length}`;
-
         const area = document.getElementById('optionsArea'); area.innerHTML = "";
         q.shuffledOptions.forEach((optObj, i) => {
             const b = document.createElement('button');
@@ -206,22 +183,14 @@
     async function finish() {
         if(!confirm("Завершить и отправить результат?")) return;
         clearInterval(timerInterval);
-        
         let score = 0;
         questions.forEach((q, i) => {
             if(answers[i] !== undefined && q.shuffledOptions[answers[i]].isCorrect) score++;
         });
-
-        // СОХРАНЕНИЕ РЕЗУЛЬТАТА В БАЗУ
         await db.collection("results").add({
-            studentName: currentUser.name,
-            phone: currentUser.phone,
-            subject: currentUser.subject,
-            score: score,
-            total: questions.length,
-            date: new Date()
+            studentName: currentUser.name, phone: currentUser.phone,
+            subject: currentUser.subject, score: score, total: questions.length, date: new Date()
         });
-
         document.getElementById('quizScreen').classList.add('hidden');
         document.getElementById('resultScreen').classList.remove('hidden');
         document.getElementById('scoreDisplay').innerText = score + " / " + questions.length;
