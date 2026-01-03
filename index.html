@@ -19,6 +19,12 @@
         .option { display: block; width: 100%; padding: 15px; margin: 8px 0; background: #f9fafb; border: 2px solid #f3f4f6; border-radius: 12px; text-align: left; cursor: pointer; }
         .option.selected { background: var(--primary); color: white; }
         .dev-link { margin-top: 20px; display: block; color: #6366f1; text-decoration: none; font-size: 14px; font-weight: bold; }
+        
+        /* Стили для анализа ошибок */
+        .option.wrong { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+        .option.correct-v { background: #d1fae5; border-color: #10b981; color: #065f46; }
+        .report-btn { background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
+        .report-btn:hover { color: #ef4444; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -55,18 +61,24 @@
         <div class="grid" id="qGrid"></div>
         <p id="qText" style="font-weight:bold; text-align:left; min-height:60px;"></p>
         <div id="optionsArea"></div>
+        
+        <button id="reportBtn" class="report-btn" onclick="reportError()">⚠️ Сообщить об ошибке в этом вопросе</button>
+
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" style="background:#94a3b8" onclick="prevQ()">Назад</button>
             <button class="btn" onclick="nextQ()">Дальше</button>
         </div>
-        <button class="btn" style="background:var(--success); margin-top:15px" onclick="finish()">Завершить тест</button>
+        <button id="finishBtn" class="btn" style="background:var(--success); margin-top:15px" onclick="finish()">Завершить тест</button>
     </div>
 
     <div id="resultScreen" class="card hidden">
         <h2>Ваш результат</h2>
         <h1 id="scoreDisplay" style="font-size:80px; color:var(--primary); margin:20px 0;">0</h1>
         <p>Результат отправлен преподавателю.</p>
-        <button class="btn" onclick="location.reload()">Выйти</button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn" style="background:#6366f1" onclick="reviewMode()">Посмотреть ошибки</button>
+            <button class="btn" onclick="location.reload()">Выйти</button>
+        </div>
     </div>
 </div>
 
@@ -74,6 +86,7 @@
 <script>
     let questions = []; let answers = {}; let currentIdx = 0;
     let timeLeft = 30 * 60; let timerInterval; let currentUser = {}; 
+    let isReviewMode = false;
 
     let deviceId = localStorage.getItem('device_id') || 'dev_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('device_id', deviceId);
@@ -106,11 +119,9 @@
                 return;
             }
 
-            // Обновляем данные (привязываем имя и устройство)
             await userRef.set({ name: name, deviceId: deviceId, lastLogin: new Date() }, { merge: true });
             currentUser = { name, phone, subject: subj };
 
-            // Загрузка вопросов
             const snap = await db.collection("questions").where("subject", "==", subj).get();
             if(snap.empty) {
                 alert("В этом предмете еще нет вопросов!");
@@ -120,12 +131,9 @@
 
             questions = [];
             snap.forEach(doc => questions.push(doc.data()));
-            
-            // Мешаем и берем 30
             questions.sort(() => Math.random() - 0.5);
             questions = questions.slice(0, 30);
 
-            // Мешаем варианты ответов
             questions.forEach(q => {
                 let opts = q.options.map((opt, i) => ({ txt: opt, isCorrect: i === q.correct }));
                 opts.sort(() => Math.random() - 0.5);
@@ -157,11 +165,23 @@
         document.getElementById('qText').innerText = q.text;
         document.getElementById('qCounter').innerText = `${idx+1} / ${questions.length}`;
         const area = document.getElementById('optionsArea'); area.innerHTML = "";
+        
         q.shuffledOptions.forEach((optObj, i) => {
             const b = document.createElement('button');
-            b.className = 'option' + (answers[idx] === i ? ' selected' : '');
+            b.className = 'option';
             b.innerText = optObj.txt;
-            b.onclick = () => { answers[idx] = i; document.getElementById('grid-'+idx).classList.add('done'); showQuestion(idx); };
+
+            if (isReviewMode) {
+                if (optObj.isCorrect) b.classList.add('correct-v'); 
+                if (answers[idx] === i && !optObj.isCorrect) b.classList.add('wrong'); 
+            } else {
+                if (answers[idx] === i) b.classList.add('selected');
+                b.onclick = () => { 
+                    answers[idx] = i; 
+                    document.getElementById('grid-'+idx).classList.add('done'); 
+                    showQuestion(idx); 
+                };
+            }
             area.appendChild(b);
         });
         document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('active'));
@@ -194,6 +214,31 @@
         document.getElementById('quizScreen').classList.add('hidden');
         document.getElementById('resultScreen').classList.remove('hidden');
         document.getElementById('scoreDisplay').innerText = score + " / " + questions.length;
+    }
+
+    // НОВЫЕ ФУНКЦИИ
+    async function reportError() {
+        const q = questions[currentIdx];
+        const reason = prompt("Что именно не так в этом вопросе?");
+        if (!reason) return;
+
+        await db.collection("reports").add({
+            questionText: q.text,
+            subject: currentUser.subject,
+            reason: reason,
+            student: currentUser.name,
+            date: new Date()
+        });
+        alert("Спасибо! Информация отправлена преподавателю.");
+    }
+
+    function reviewMode() {
+        isReviewMode = true;
+        document.getElementById('resultScreen').classList.add('hidden');
+        document.getElementById('quizScreen').classList.remove('hidden');
+        document.getElementById('finishBtn').style.display = 'none';
+        document.getElementById('reportBtn').style.display = 'none';
+        showQuestion(0);
     }
 </script>
 </body>
