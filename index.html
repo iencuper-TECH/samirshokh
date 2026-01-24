@@ -3,243 +3,906 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAMIRSHOKH TEST</title>
+    <title>Тестовая система - Университет</title>
     <style>
-        :root { --primary: #4f46e5; --success: #10b981; --bg: #f3f4f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; min-height: 100vh; margin: 0; }
-        .container { width: 95%; max-width: 500px; padding: 20px 0; }
-        .card { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        input, select { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 20px; }
-        .grid-item { height: 35px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        .grid-item.done { background: var(--success); color: white; }
-        .grid-item.active { border: 2px solid var(--primary); }
-        .option { display: block; width: 100%; padding: 15px; margin: 8px 0; background: #f9fafb; border: 2px solid #f3f4f6; border-radius: 12px; text-align: left; cursor: pointer; }
-        .option.selected { background: var(--primary); color: white; }
-        .dev-link { margin-top: 20px; display: block; color: #6366f1; text-decoration: none; font-size: 14px; font-weight: bold; }
+        :root {
+            --primary: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+        }
         
-        /* Стили для анализа ошибок */
-        .option.wrong { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
-        .option.correct-v { background: #d1fae5; border-color: #10b981; color: #065f46; }
-        .report-btn { background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
-        .report-btn:hover { color: #ef4444; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #0da271;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .timer {
+            background: var(--danger);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .question-counter {
+            font-size: 16px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .grid-item {
+            height: 40px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .grid-item:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .grid-item.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+        
+        .grid-item.done {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .question-content {
+            padding: 30px;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #1f2937;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            padding: 18px 20px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            word-break: break-word;
+        }
+        
+        .option:hover {
+            border-color: var(--primary);
+            background: #f5f3ff;
+        }
+        
+        .option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .option.correct {
+            background: #d1fae5;
+            border-color: var(--success);
+            color: #065f46;
+        }
+        
+        .option.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+        
+        .navigation {
+            display: flex;
+            gap: 12px;
+            padding: 20px 30px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .navigation .btn {
+            flex: 1;
+        }
+        
+        .result-screen {
+            text-align: center;
+            padding: 40px 30px;
+        }
+        
+        .result-score {
+            font-size: 100px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 20px 0;
+            line-height: 1;
+        }
+        
+        .result-message {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .result-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .dev-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #9ca3af;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        .dev-link:hover {
+            color: var(--primary);
+        }
+        
+        .report-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 20px;
+            padding: 10px;
+        }
+        
+        .report-btn:hover {
+            color: var(--danger);
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .result-score {
+                font-size: 70px;
+            }
+            
+            .question-grid {
+                grid-template-columns: repeat(5, 1fr);
+                padding: 15px;
+            }
+        }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
 <body>
+    <div class="container">
+        <!-- Экран входа -->
+        <div id="loginScreen" class="card">
+            <div class="header">
+                <h1>📚 Тестовая система</h1>
+                <p>Проверка знаний по учебным дисциплинам</p>
+            </div>
+            <div class="content">
+                <div class="form-group">
+                    <label for="nameInput"><i class="fas fa-user"></i> Фамилия и Имя</label>
+                    <input type="text" id="nameInput" class="form-control" placeholder="Иванов Иван">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneInput"><i class="fas fa-phone"></i> Номер телефона</label>
+                    <input type="tel" id="phoneInput" class="form-control" placeholder="998901234567">
+                </div>
+                
+                <div class="form-group">
+                    <label for="subjectSelect"><i class="fas fa-book"></i> Предмет</label>
+                    <select id="subjectSelect" class="form-control">
+                        <option value="anatomy">Анатомия</option>
+                        <option value="biology">Биология</option>
+                        <option value="chemistry">Химия</option>
+                        <option value="physics">Физика</option>
+                        <option value="history">История</option>
+                        <option value="english">Английский язык</option>
+                        <option value="latin">Латинский язык</option>
+                        <option value="medical">Медицинская профессия</option>
+                        <option value="uzbek">Узбекский язык</option>
+                        <option value="histology">Гистология</option>
+                        <option value="philosophy">Философия</option>
+                    </select>
+                </div>
+                
+                <button class="btn" onclick="tryLogin()">
+                    <i class="fas fa-play-circle"></i> Начать тестирование
+                </button>
+                
+                <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">
+                    <i class="fas fa-question-circle"></i> Техническая поддержка
+                </a>
+            </div>
+        </div>
 
-<div class="container">
-    <div id="loginScreen" class="card">
-        <h2 style="color:var(--primary); margin:0;">SAMIRSHOKH TEST</h2>
-        <p>Система экзаменов</p>
-        <input type="text" id="nameInput" placeholder="Ваша Фамилия и Имя">
-        <input type="tel" id="phoneInput" placeholder="Номер телефона (Login)">
-        <select id="subjectSelect">
-            <option value="latin">Латинский язык</option>
-            <option value="history">История</option>
-            <option value="anatomy">Анатомия</option>
-            <option value="medical">Медицинская профессия</option>
-            <option value="chemistry">Химия</option>
-            <option value="biology">Биология</option>
-            <option value="english">Английский язык</option>
-            <option value="uzbek">Узбекский язык</option>
-            <option value="histology">Гистология</option>
-            <option value="philosophy">Философия</option>
-        </select>
-        <button class="btn" id="startBtn" onclick="tryLogin()">Начать экзамен</button>
-        <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">👨‍💻 Написать разработчику</a>
+        <!-- Экран теста -->
+        <div id="quizScreen" class="card hidden">
+            <div class="quiz-header">
+                <div class="timer" id="timer">30:00</div>
+                <div class="question-counter" id="qCounter">1 / 30</div>
+            </div>
+            
+            <div class="question-grid" id="qGrid"></div>
+            
+            <div class="question-content">
+                <div class="question-text" id="qText"></div>
+                <div class="options-container" id="optionsArea"></div>
+                
+                <button id="reportBtn" class="report-btn" onclick="reportError()">
+                    <i class="fas fa-exclamation-triangle"></i> Сообщить об ошибке
+                </button>
+            </div>
+            
+            <div class="navigation">
+                <button class="btn" style="background: #9ca3af;" onclick="prevQuestion()">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                <button class="btn" onclick="nextQuestion()">
+                    Дальше <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            
+            <button id="finishBtn" class="btn btn-success" style="margin: 20px; border-radius: 12px;" onclick="finishTest()">
+                <i class="fas fa-flag-checkered"></i> Завершить тест
+            </button>
+        </div>
+
+        <!-- Экран результатов -->
+        <div id="resultScreen" class="card hidden">
+            <div class="header">
+                <h1>🎉 Результаты теста</h1>
+                <p>Тестирование завершено</p>
+            </div>
+            
+            <div class="result-screen">
+                <div class="result-score" id="scoreDisplay">0</div>
+                <div class="result-message" id="resultMessage"></div>
+                
+                <div class="result-actions">
+                    <button class="btn" onclick="reviewMode()">
+                        <i class="fas fa-chart-bar"></i> Анализ ошибок
+                    </button>
+                    
+                    <button class="btn btn-success" onclick="retrySameTest()">
+                        <i class="fas fa-redo"></i> Пересдать этот вариант
+                    </button>
+                    
+                    <button class="btn btn-warning" onclick="newTestSameSubject()">
+                        <i class="fas fa-plus-circle"></i> Новый тест по предмету
+                    </button>
+                    
+                    <button class="btn btn-danger" onclick="location.reload()">
+                        <i class="fas fa-sign-out-alt"></i> Выйти в меню
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="quizScreen" class="card hidden">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <span id="timer" style="color:#ef4444; font-weight:bold; font-size:18px;">30:00</span>
-            <span id="qCounter">1 / 30</span>
-        </div>
-        <div class="grid" id="qGrid"></div>
-        <p id="qText" style="font-weight:bold; text-align:left; min-height:60px;"></p>
-        <div id="optionsArea"></div>
+    <!-- Подключаем Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Конфигурационный файл (один для всех) -->
+    <script>
+        // Конфигурация Firebase (такая же как в локальном config.js)
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
+            authDomain: "test-by-samirshokh.firebaseapp.com",
+            projectId: "test-by-samirshokh",
+            storageBucket: "test-by-samirshokh.firebasestorage.app",
+            messagingSenderId: "105940641906",
+            appId: "1:105940641906:web:effee678673ae954b53aeb"
+        };
         
-        <button id="reportBtn" class="report-btn" onclick="reportError()">⚠️ Сообщить об ошибке в этом вопросе</button>
+        // Инициализация Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+    </script>
 
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn" style="background:#94a3b8" onclick="prevQ()">Назад</button>
-            <button class="btn" onclick="nextQ()">Дальше</button>
-        </div>
-        <button id="finishBtn" class="btn" style="background:var(--success); margin-top:15px" onclick="finish()">Завершить тест</button>
-    </div>
+    <script>
+        // Глобальные переменные
+        let questions = [];
+        let answers = {};
+        let currentQuestionIndex = 0;
+        let timeLeft = 30 * 60;
+        let timerInterval;
+        let currentUser = {};
+        let isReviewMode = false;
+        let currentTestId = null;
 
-    <div id="resultScreen" class="card hidden">
-        <h2>Ваш результат</h2>
-        <h1 id="scoreDisplay" style="font-size:80px; color:var(--primary); margin:20px 0;">0</h1>
-        <p>Результат отправлен преподавателю.</p>
-        <div style="display:flex; gap:10px;">
-            <button class="btn" style="background:#6366f1" onclick="reviewMode()">Посмотреть ошибки</button>
-            <button class="btn" onclick="location.reload()">Выйти</button>
-        </div>
-    </div>
-</div>
+        // Генерация deviceId
+        let deviceId = localStorage.getItem('device_id') || 'web_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('device_id', deviceId);
 
-<script src="config.js"></script>
-<script>
-    let questions = []; let answers = {}; let currentIdx = 0;
-    let timeLeft = 30 * 60; let timerInterval; let currentUser = {}; 
-    let isReviewMode = false;
+        // Основная функция входа
+        async function tryLogin() {
+            const name = document.getElementById('nameInput').value.trim();
+            const phone = document.getElementById('phoneInput').value.trim();
+            const subject = document.getElementById('subjectSelect').value;
+            const btn = event.target;
 
-    let deviceId = localStorage.getItem('device_id') || 'dev_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('device_id', deviceId);
-
-    async function tryLogin() {
-        const name = document.getElementById('nameInput').value.trim();
-        const phone = document.getElementById('phoneInput').value.trim();
-        const subj = document.getElementById('subjectSelect').value;
-        const btn = document.getElementById('startBtn');
-
-        if(!name || !phone) return alert("Заполните Имя и Номер!");
-        
-        btn.disabled = true;
-        btn.innerText = "Проверка доступа...";
-
-        try {
-            const userRef = db.collection("users").doc(phone);
-            const userDoc = await userRef.get();
-
-            if (!userDoc.exists) {
-                alert("ОШИБКА: Вашего номера нет в списке одобренных. Свяжитесь с @dr_samirshokh");
-                btn.disabled = false; btn.innerText = "Начать экзамен";
+            if (!name || !phone) {
+                alert('Пожалуйста, заполните все поля');
                 return;
             }
 
-            const userData = userDoc.data();
-            if(userData.deviceId && userData.deviceId !== deviceId) {
-                alert("ОШИБКА: Вход разрешен только с вашего основного устройства!");
-                btn.disabled = false; btn.innerText = "Начать экзамен";
-                return;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
+
+            try {
+                // Проверяем доступ пользователя
+                const userRef = db.collection("users").doc(phone);
+                const userDoc = await userRef.get();
+
+                if (!userDoc.exists) {
+                    alert('❌ Ваш номер не найден в системе. Обратитесь к преподавателю.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
+                    return;
+                }
+
+                const userData = userDoc.data();
+                
+                // Проверка устройства (опционально)
+                if (userData.deviceId && userData.deviceId !== deviceId) {
+                    if (!confirm('⚠️ Вы входите с нового устройства. Продолжить?')) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
+                        return;
+                    }
+                }
+
+                // Обновляем информацию о пользователе
+                await userRef.set({
+                    name: name,
+                    deviceId: deviceId,
+                    lastLogin: new Date(),
+                    lastSubject: subject
+                }, { merge: true });
+
+                currentUser = { name, phone, subject };
+                currentTestId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
+                // Загружаем вопросы
+                await loadQuestions();
+
+                // Переходим к тесту
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('quizScreen').classList.remove('hidden');
+                renderQuestionGrid();
+                showQuestion(0);
+                startTimer();
+
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                alert('Ошибка соединения с сервером. Проверьте интернет и попробуйте снова.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
+            }
+        }
+
+        // Загрузка вопросов
+        async function loadQuestions() {
+            const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
+            const savedTest = localStorage.getItem(storageKey);
+
+            if (savedTest) {
+                const parsed = JSON.parse(savedTest);
+                const savedTime = parsed.timestamp;
+                const currentTime = new Date().getTime();
+                const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
+
+                // Используем сохраненные вопросы если им меньше 24 часов
+                if (hoursDiff < 24) {
+                    questions = parsed.questions;
+                    currentTestId = parsed.testId;
+                    console.log('Используем сохраненный тест');
+                    return;
+                }
             }
 
-            await userRef.set({ name: name, deviceId: deviceId, lastLogin: new Date() }, { merge: true });
-            currentUser = { name, phone, subject: subj };
+            // Загружаем новые вопросы
+            await loadNewQuestions(storageKey);
+        }
 
-            const snap = await db.collection("questions").where("subject", "==", subj).get();
-            if(snap.empty) {
-                alert("В этом предмете еще нет вопросов!");
-                btn.disabled = false; btn.innerText = "Начать экзамен";
-                return;
+        // Загрузка новых вопросов из базы
+        async function loadNewQuestions(storageKey) {
+            try {
+                const snapshot = await db.collection("questions")
+                    .where("subject", "==", currentUser.subject)
+                    .get();
+
+                if (snapshot.empty) {
+                    throw new Error('По этому предмету пока нет вопросов');
+                }
+
+                const allQuestions = [];
+                snapshot.forEach(doc => allQuestions.push(doc.data()));
+
+                // Выбираем случайные 30 вопросов
+                const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+                questions = shuffled.slice(0, 30);
+
+                // Перемешиваем варианты ответов в каждом вопросе
+                questions.forEach(q => {
+                    const options = q.options.map((text, index) => ({
+                        text,
+                        isCorrect: index === q.correct
+                    }));
+                    
+                    // Перемешиваем варианты
+                    options.sort(() => Math.random() - 0.5);
+                    q.shuffledOptions = options;
+                    q.correctIndex = options.findIndex(opt => opt.isCorrect);
+                });
+
+                // Сохраняем в localStorage
+                localStorage.setItem(storageKey, JSON.stringify({
+                    questions: questions,
+                    testId: currentTestId,
+                    timestamp: new Date().getTime(),
+                    subject: currentUser.subject
+                }));
+
+            } catch (error) {
+                console.error('Ошибка загрузки вопросов:', error);
+                throw error;
             }
+        }
 
-            questions = [];
-            snap.forEach(doc => questions.push(doc.data()));
-            questions.sort(() => Math.random() - 0.5);
-            questions = questions.slice(0, 30);
-
-            questions.forEach(q => {
-                let opts = q.options.map((opt, i) => ({ txt: opt, isCorrect: i === q.correct }));
-                opts.sort(() => Math.random() - 0.5);
-                q.shuffledOptions = opts;
+        // Отрисовка сетки вопросов
+        function renderQuestionGrid() {
+            const grid = document.getElementById('qGrid');
+            grid.innerHTML = '';
+            
+            questions.forEach((_, index) => {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.textContent = index + 1;
+                item.onclick = () => showQuestion(index);
+                grid.appendChild(item);
             });
+        }
 
-            document.getElementById('loginScreen').classList.add('hidden');
+        // Показ вопроса
+        function showQuestion(index) {
+            currentQuestionIndex = index;
+            const question = questions[index];
+            
+            // Обновляем счетчик
+            document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
+            
+            // Обновляем текст вопроса
+            document.getElementById('qText').textContent = question.text;
+            
+            // Очищаем и создаем варианты ответов
+            const optionsArea = document.getElementById('optionsArea');
+            optionsArea.innerHTML = '';
+            
+            question.shuffledOptions.forEach((option, optionIndex) => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.textContent = option.text;
+                
+                if (isReviewMode) {
+                    if (option.isCorrect) {
+                        button.classList.add('correct');
+                    }
+                    if (answers[index] === optionIndex && !option.isCorrect) {
+                        button.classList.add('wrong');
+                    }
+                } else {
+                    if (answers[index] === optionIndex) {
+                        button.classList.add('selected');
+                    }
+                    button.onclick = () => selectAnswer(optionIndex);
+                }
+                
+                optionsArea.appendChild(button);
+            });
+            
+            // Обновляем активный вопрос в сетке
+            document.querySelectorAll('.grid-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('.grid-item')[index].classList.add('active');
+        }
+
+        // Выбор ответа
+        function selectAnswer(optionIndex) {
+            answers[currentQuestionIndex] = optionIndex;
+            
+            // Помечаем вопрос как отвеченный
+            document.querySelectorAll('.grid-item')[currentQuestionIndex].classList.add('done');
+            
+            // Обновляем отображение
+            showQuestion(currentQuestionIndex);
+            
+            // Автоматически переходим к следующему вопросу
+            setTimeout(() => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    nextQuestion();
+                }
+            }, 500);
+        }
+
+        // Следующий вопрос
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        // Предыдущий вопрос
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        // Таймер
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 30 * 60;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                if (timeLeft <= 0) {
+                    finishTest();
+                }
+            }, 1000);
+        }
+
+        // Завершение теста
+        async function finishTest() {
+            if (!confirm('Завершить тестирование и отправить результат?')) {
+                return;
+            }
+            
+            clearInterval(timerInterval);
+            
+            // Подсчет баллов
+            let score = 0;
+            questions.forEach((question, index) => {
+                if (answers[index] !== undefined) {
+                    if (question.shuffledOptions[answers[index]].isCorrect) {
+                        score++;
+                    }
+                }
+            });
+            
+            // Сохранение результата
+            try {
+                await db.collection("results").add({
+                    studentName: currentUser.name,
+                    phone: currentUser.phone,
+                    subject: currentUser.subject,
+                    score: score,
+                    total: questions.length,
+                    percentage: Math.round((score / questions.length) * 100),
+                    testId: currentTestId,
+                    date: new Date(),
+                    answers: answers,
+                    platform: 'github_pages'
+                });
+                
+                // Показ результатов
+                document.getElementById('quizScreen').classList.add('hidden');
+                document.getElementById('resultScreen').classList.remove('hidden');
+                
+                document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
+                
+                const percentage = Math.round((score / questions.length) * 100);
+                let message = '';
+                if (percentage >= 90) message = 'Отлично! Вы показали прекрасный результат!';
+                else if (percentage >= 70) message = 'Хорошо! Вы хорошо справились с тестом.';
+                else if (percentage >= 50) message = 'Удовлетворительно. Есть над чем поработать.';
+                else message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
+                
+                document.getElementById('resultMessage').innerHTML = `
+                    ${message}<br><br>
+                    <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
+                    Результат сохранен и отправлен преподавателю.
+                `;
+                
+            } catch (error) {
+                console.error('Ошибка сохранения результата:', error);
+                alert('Ошибка при сохранении результата. Ваши данные сохранены локально.');
+                
+                // Все равно показываем результат
+                document.getElementById('quizScreen').classList.add('hidden');
+                document.getElementById('resultScreen').classList.remove('hidden');
+                document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
+                document.getElementById('resultMessage').textContent = 
+                    `Вы набрали ${score} из ${questions.length} баллов. Ошибка отправки результата.`;
+            }
+        }
+
+        // Режим просмотра ошибок
+        function reviewMode() {
+            isReviewMode = true;
+            document.getElementById('resultScreen').classList.add('hidden');
             document.getElementById('quizScreen').classList.remove('hidden');
-            renderGrid();
+            document.getElementById('finishBtn').style.display = 'none';
+            document.getElementById('reportBtn').style.display = 'none';
+            document.querySelector('.navigation').style.display = 'none';
+            showQuestion(0);
+        }
+
+        // Пересдача того же варианта
+        function retrySameTest() {
+            answers = {};
+            timeLeft = 30 * 60;
+            isReviewMode = false;
+            
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('finishBtn').style.display = 'block';
+            document.getElementById('reportBtn').style.display = 'block';
+            document.querySelector('.navigation').style.display = 'flex';
+            
+            // Сброс сетки
+            document.querySelectorAll('.grid-item').forEach(item => {
+                item.classList.remove('done');
+            });
+            
             showQuestion(0);
             startTimer();
-        } catch (e) {
-            alert("Ошибка сети: " + e.message);
-            btn.disabled = false; btn.innerText = "Начать экзамен";
         }
-    }
 
-    function renderGrid() {
-        const grid = document.getElementById('qGrid'); grid.innerHTML = "";
-        questions.forEach((_, i) => {
-            const d = document.createElement('div'); d.className = 'grid-item'; d.id = 'grid-'+i; d.innerText = i+1;
-            d.onclick = () => showQuestion(i); grid.appendChild(d);
-        });
-    }
+        // Новый тест по тому же предмету
+        function newTestSameSubject() {
+            const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
+            localStorage.removeItem(storageKey);
+            location.reload();
+        }
 
-    function showQuestion(idx) {
-        currentIdx = idx;
-        const q = questions[idx];
-        document.getElementById('qText').innerText = q.text;
-        document.getElementById('qCounter').innerText = `${idx+1} / ${questions.length}`;
-        const area = document.getElementById('optionsArea'); area.innerHTML = "";
-        
-        q.shuffledOptions.forEach((optObj, i) => {
-            const b = document.createElement('button');
-            b.className = 'option';
-            b.innerText = optObj.txt;
-
-            if (isReviewMode) {
-                if (optObj.isCorrect) b.classList.add('correct-v'); 
-                if (answers[idx] === i && !optObj.isCorrect) b.classList.add('wrong'); 
-            } else {
-                if (answers[idx] === i) b.classList.add('selected');
-                b.onclick = () => { 
-                    answers[idx] = i; 
-                    document.getElementById('grid-'+idx).classList.add('done'); 
-                    showQuestion(idx); 
-                };
+        // Жалоба на ошибку
+        async function reportError() {
+            const question = questions[currentQuestionIndex];
+            const reason = prompt('Опишите ошибку в этом вопросе:');
+            
+            if (!reason) return;
+            
+            try {
+                await db.collection("reports").add({
+                    questionText: question.text,
+                    subject: currentUser.subject,
+                    reason: reason,
+                    studentName: currentUser.name,
+                    studentPhone: currentUser.phone,
+                    date: new Date(),
+                    platform: 'github_pages'
+                });
+                
+                alert('Спасибо! Ваше сообщение отправлено преподавателю.');
+            } catch (error) {
+                alert('Ошибка отправки жалобы. Попробуйте позже.');
             }
-            area.appendChild(b);
+        }
+
+        // Восстановление данных при загрузке
+        window.addEventListener('load', function() {
+            const savedUser = localStorage.getItem('lastUser');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    document.getElementById('nameInput').value = user.name || '';
+                    document.getElementById('phoneInput').value = user.phone || '';
+                    if (user.subject) {
+                        document.getElementById('subjectSelect').value = user.subject;
+                    }
+                } catch(e) {
+                    console.log('Не удалось восстановить данные');
+                }
+            }
         });
-        document.querySelectorAll('.grid-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('grid-'+idx).classList.add('active');
-    }
 
-    function nextQ() { if(currentIdx < questions.length-1) showQuestion(currentIdx+1); }
-    function prevQ() { if(currentIdx > 0) showQuestion(currentIdx-1); }
-
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            let m = Math.floor(timeLeft/60), s = timeLeft%60;
-            document.getElementById('timer').innerText = `${m}:${s<10?'0'+s:s}`;
-            if(timeLeft <= 0) finish();
-        }, 1000);
-    }
-
-    async function finish() {
-        if(!confirm("Завершить и отправить результат?")) return;
-        clearInterval(timerInterval);
-        let score = 0;
-        questions.forEach((q, i) => {
-            if(answers[i] !== undefined && q.shuffledOptions[answers[i]].isCorrect) score++;
-        });
-        await db.collection("results").add({
-            studentName: currentUser.name, phone: currentUser.phone,
-            subject: currentUser.subject, score: score, total: questions.length, date: new Date()
-        });
-        document.getElementById('quizScreen').classList.add('hidden');
-        document.getElementById('resultScreen').classList.remove('hidden');
-        document.getElementById('scoreDisplay').innerText = score + " / " + questions.length;
-    }
-
-    // НОВЫЕ ФУНКЦИИ
-    async function reportError() {
-        const q = questions[currentIdx];
-        const reason = prompt("Что именно не так в этом вопросе?");
-        if (!reason) return;
-
-        await db.collection("reports").add({
-            questionText: q.text,
-            subject: currentUser.subject,
-            reason: reason,
-            student: currentUser.name,
-            date: new Date()
-        });
-        alert("Спасибо! Информация отправлена преподавателю.");
-    }
-
-    function reviewMode() {
-        isReviewMode = true;
-        document.getElementById('resultScreen').classList.add('hidden');
-        document.getElementById('quizScreen').classList.remove('hidden');
-        document.getElementById('finishBtn').style.display = 'none';
-        document.getElementById('reportBtn').style.display = 'none';
-        showQuestion(0);
-    }
-</script>
+        // Сохранение данных пользователя
+        window.saveUserData = function() {
+            localStorage.setItem('lastUser', JSON.stringify({
+                name: currentUser.name,
+                phone: currentUser.phone,
+                subject: currentUser.subject
+            }));
+        };
+    </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+// config.js - ОДИНАКОВЫЙ для локального админа и сайта
 const firebaseConfig = {
     apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
     authDomain: "test-by-samirshokh.firebaseapp.com",
@@ -7,8 +8,4 @@ const firebaseConfig = {
     appId: "1:105940641906:web:effee678673ae954b53aeb"
 };
 
-// Инициализация Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
+window.firebaseConfig = firebaseConfig;
