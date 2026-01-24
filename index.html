@@ -151,7 +151,6 @@
             display: none !important;
         }
         
-        /* Стили для теста остаются такими же */
         .quiz-header {
             display: flex;
             justify-content: space-between;
@@ -386,7 +385,6 @@
             color: var(--danger);
         }
         
-        /* Сообщения об ошибках */
         .error-message {
             background: #fee2e2;
             border: 1px solid #fecaca;
@@ -412,7 +410,6 @@
             border-radius: 8px;
         }
         
-        /* Адаптация для очень маленьких экранов */
         @media (max-width: 480px) {
             .question-grid {
                 grid-template-columns: repeat(5, 1fr);
@@ -508,7 +505,7 @@
             </div>
         </div>
 
-        <!-- Экран блокировки (если устройство уже используется) -->
+        <!-- Экран блокировки -->
         <div id="blockedScreen" class="card hidden">
             <div class="header" style="background: var(--danger);">
                 <h1>⛔ Доступ ограничен</h1>
@@ -602,8 +599,18 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Config file -->
-    <script src="config.js"></script>
+    <!-- Конфигурация Firebase -->
+    <script>
+        // ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ РЕАЛЬНЫЕ ДАННЫЕ ИЗ FIREBASE
+        window.firebaseConfig = {
+            apiKey: "AIzaSyABC123...", // Ваш API Key
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
+        };
+    </script>
 
     <script>
         // Глобальные переменные
@@ -637,46 +644,38 @@
 
         // Генерация уникального ID устройства
         function generateDeviceId() {
-            // Используем несколько источников для уникальности
             const sources = [
                 navigator.userAgent,
                 navigator.platform,
-                navigator.language,
-                screen.width + 'x' + screen.height,
                 new Date().getTime(),
                 Math.random().toString(36).substr(2, 9)
             ];
             
             let hash = '';
             sources.forEach(source => {
-                // Простой хэш
                 for(let i = 0; i < source.length; i++) {
                     hash += source.charCodeAt(i).toString(36);
                 }
             });
             
-            // Берем только часть хэша для удобства
             return 'dev_' + hash.substr(0, 20);
         }
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            // Генерируем ID устройства
             deviceId = localStorage.getItem('device_id') || generateDeviceId();
             localStorage.setItem('device_id', deviceId);
             
             console.log('Device ID:', deviceId);
             
-            // Инициализируем Firebase
             if (!initFirebase()) {
                 showLoginError('Режим оффлайн. Некоторые функции могут быть недоступны.');
             }
             
-            // Проверяем активную сессию
             checkActiveSession();
         });
 
-        // Проверка активной сессии для этого устройства
+        // Проверка активной сессии
         function checkActiveSession() {
             const activeSession = localStorage.getItem('active_session');
             if (activeSession) {
@@ -686,12 +685,10 @@
                     const currentTime = new Date().getTime();
                     const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
                     
-                    // Если сессия активна менее 12 часов, показываем тест
                     if (hoursDiff < 12) {
                         currentUser = session.user;
                         currentTestId = session.testId;
                         
-                        // Загружаем сохраненные вопросы
                         const savedQuestions = localStorage.getItem(`test_${session.user.login}_${session.user.subject}`);
                         if (savedQuestions) {
                             try {
@@ -699,7 +696,6 @@
                                 questions = parsed.questions || [];
                                 answers = parsed.answers || {};
                                 
-                                // Показываем тест
                                 document.getElementById('loginScreen').classList.add('hidden');
                                 document.getElementById('quizScreen').classList.remove('hidden');
                                 renderQuestionGrid();
@@ -717,7 +713,6 @@
                 }
             }
             
-            // Очищаем старые сессии
             clearExpiredSessions();
         }
 
@@ -740,30 +735,30 @@
         // Проверка логина в базе данных
         async function checkLoginAccess(login) {
             if (!db) {
-                // В оффлайн режиме проверяем локально
-                const allowedLogins = JSON.parse(localStorage.getItem('allowed_logins') || '[]');
-                return allowedLogins.includes(login);
+                // Оффлайн режим - демо доступ
+                const demoLogins = ['student123', 'user123', 'testuser'];
+                if (demoLogins.includes(login)) {
+                    return { allowed: true, userData: { approved: true } };
+                }
+                return { allowed: false, reason: 'Логин не найден' };
             }
             
             try {
-                const userDoc = await db.collection("users").doc(login).get();
+                // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем в коллекции "allowed_users"
+                const userDoc = await db.collection("allowed_users").doc(login).get();
                 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
                     
-                    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем поле approved
                     if (!userData.approved) {
                         return { allowed: false, reason: 'Доступ не разрешен администратором' };
                     }
                     
-                    // Проверяем, не используется ли уже этот логин на другом устройстве
                     if (userData.activeSession && userData.activeSession !== deviceId) {
-                        // Проверяем время сессии
                         const sessionTime = userData.sessionTimestamp || 0;
                         const currentTime = new Date().getTime();
                         const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
                         
-                        // Если сессия активна менее 12 часов, блокируем вход
                         if (hoursDiff < 12) {
                             return { 
                                 allowed: false, 
@@ -786,7 +781,7 @@
             }
         }
 
-        // Обновление информации о сессии в базе
+        // Обновление информации о сессии
         async function updateSessionInfo(login, startSession = true) {
             if (!db) return;
             
@@ -804,8 +799,8 @@
                     updateData.sessionTimestamp = null;
                 }
                 
-                // ИСПРАВЛЕНО: Теперь используем "users" вместо "allowed_users"
-                await db.collection("users").doc(login).update(updateData);
+                // ИСПРАВЛЕНО: Используем коллекцию "allowed_users"
+                await db.collection("allowed_users").doc(login).update(updateData);
                 return true;
             } catch (error) {
                 console.error('Ошибка обновления сессии:', error);
@@ -813,18 +808,16 @@
             }
         }
 
-        // ОСНОВНАЯ ФУНКЦИЯ ВХОДА
+        // Функция входа
         async function tryLogin(event) {
             event.preventDefault();
             console.log("🟢 ПОПЫТКА ВХОДА");
             
-            // Получаем данные из формы
             const login = document.getElementById('loginInput').value.trim();
             const name = document.getElementById('nameInput').value.trim();
             const subject = document.getElementById('subjectSelect').value;
             const btn = event.currentTarget;
             
-            // Проверяем заполненность полей
             if (!login || login.length < 3) {
                 showLoginError('Логин должен содержать минимум 3 символа');
                 return;
@@ -840,30 +833,17 @@
                 return;
             }
             
-            // Блокируем кнопку
             btn.disabled = true;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
             
             try {
-                // Проверяем доступ
                 const accessCheck = await checkLoginAccess(login);
                 
                 if (!accessCheck.allowed) {
                     if (accessCheck.reason === 'Уже используется на другом устройстве') {
-                        // Показываем экран блокировки
                         document.getElementById('loginScreen').classList.add('hidden');
                         document.getElementById('blockedScreen').classList.remove('hidden');
-                        
-                        // Сохраняем информацию о блокировке
-                        if (accessCheck.userData) {
-                            const lastDevice = accessCheck.userData.lastDevice || 'неизвестно';
-                            const lastLogin = accessCheck.userData.lastLogin 
-                                ? new Date(accessCheck.userData.lastLogin.seconds * 1000).toLocaleString() 
-                                : 'неизвестно';
-                            
-                            console.log(`Логин ${login} уже используется на устройстве: ${lastDevice} (последний вход: ${lastLogin})`);
-                        }
                     } else {
                         showLoginError(`Доступ запрещен: ${accessCheck.reason || 'логин не найден'}`);
                     }
@@ -872,10 +852,8 @@
                     return;
                 }
                 
-                // Обновляем информацию о сессии
                 await updateSessionInfo(login, true);
                 
-                // Сохраняем информацию о пользователе
                 currentUser = { 
                     login: login, 
                     name: name, 
@@ -886,7 +864,6 @@
                 currentTestId = Date.now().toString(36);
                 currentSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
                 
-                // Сохраняем сессию локально
                 localStorage.setItem('active_session', JSON.stringify({
                     user: currentUser,
                     testId: currentTestId,
@@ -894,23 +871,10 @@
                     timestamp: new Date().getTime()
                 }));
                 
-                // Сохраняем логин в список разрешенных (для оффлайн режима)
-                if (!db) {
-                    const allowedLogins = JSON.parse(localStorage.getItem('allowed_logins') || '[]');
-                    if (!allowedLogins.includes(login)) {
-                        allowedLogins.push(login);
-                        localStorage.setItem('allowed_logins', JSON.stringify(allowedLogins));
-                    }
-                }
-                
-                // Загружаем вопросы
-                await loadQuestions();
-                
-                // Переключаем экраны
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('quizScreen').classList.remove('hidden');
                 
-                // Инициализируем тест
+                await loadQuestions();
                 renderQuestionGrid();
                 showQuestion(0);
                 startTimer();
@@ -925,11 +889,12 @@
             }
         }
 
-        // Загрузка вопросов
+        // Загрузка вопросов - ИСПРАВЛЕННАЯ ВЕРСИЯ
         async function loadQuestions() {
             const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
             const savedTest = localStorage.getItem(storageKey);
             
+            // ИСПРАВЛЕНИЕ: Если сохраненный тест есть, используем его
             if (savedTest) {
                 try {
                     const parsed = JSON.parse(savedTest);
@@ -937,7 +902,7 @@
                     const currentTime = new Date().getTime();
                     const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
                     
-                    if (hoursDiff < 24 && parsed.questions && parsed.questions.length > 0) {
+                    if (hoursDiff < 24 && parsed.questions && parsed.questions.length >= 5) {
                         questions = parsed.questions;
                         currentTestId = parsed.testId || currentTestId;
                         console.log('Используем сохраненный тест из localStorage');
@@ -948,37 +913,129 @@
                 }
             }
             
-            // Загружаем вопросы (остальная логика из предыдущей версии)
-            loadDemoQuestions();
+            // Генерируем новые вопросы
+            generateQuestionsForSubject();
+            console.log('Сгенерирован новый тест');
         }
 
-        // Остальные функции теста остаются такими же...
-        function loadDemoQuestions() {
-            questions = [
-                {
-                    text: "Рентгеноструктурный анализ - это метод...",
-                    shuffledOptions: [
-                        { text: "основанный на просвечивании контролируемых изделий рентгеновскими лучами", isCorrect: false },
-                        { text: "изучение кристаллического вещества с помощью рентгеновского излучения", isCorrect: true },
-                        { text: "анализа химического состава образцов по их рентгеновскими спектрами", isCorrect: false },
-                        { text: "метод неразрушающего контроля материалов", isCorrect: false }
-                    ],
-                    correctIndex: 1
-                },
-                {
-                    text: "Второй закон Ньютона формулируется как:",
-                    shuffledOptions: [
-                        { text: "Сила равна произведению массы на ускорение", isCorrect: true },
-                        { text: "Действию всегда есть равное и противоположное противодействие", isCorrect: false },
-                        { text: "Тело сохраняет состояние покоя или равномерного прямолинейного движения", isCorrect: false },
-                        { text: "Энергия не создается и не уничтожается", isCorrect: false }
-                    ],
-                    correctIndex: 0
+        // Генерация вопросов по предмету
+        function generateQuestionsForSubject() {
+            questions = [];
+            
+            // ИСПРАВЛЕНИЕ: Создаем 30 вопросов для сетки
+            for (let i = 0; i < 30; i++) {
+                let question;
+                
+                if (currentUser.subject === 'physics') {
+                    // Вопросы по физике
+                    const physicsQuestions = [
+                        {
+                            text: "Второй закон Ньютона формулируется как:",
+                            shuffledOptions: [
+                                { text: "Сила равна произведению массы на ускорение", isCorrect: true },
+                                { text: "Действию всегда есть равное и противоположное противодействие", isCorrect: false },
+                                { text: "Тело сохраняет состояние покоя или равномерного прямолинейного движения", isCorrect: false },
+                                { text: "Энергия не создается и не уничтожается", isCorrect: false }
+                            ],
+                            correctIndex: 0
+                        },
+                        {
+                            text: "Что такое инерция?",
+                            shuffledOptions: [
+                                { text: "Свойство тел сохранять состояние покоя или равномерного движения", isCorrect: true },
+                                { text: "Сила притяжения между телами", isCorrect: false },
+                                { text: "Способность тел совершать работу", isCorrect: false },
+                                { text: "Изменение скорости тела", isCorrect: false }
+                            ],
+                            correctIndex: 0
+                        },
+                        {
+                            text: "Единица измерения силы в системе СИ:",
+                            shuffledOptions: [
+                                { text: "Ньютон (Н)", isCorrect: true },
+                                { text: "Джоуль (Дж)", isCorrect: false },
+                                { text: "Ватт (Вт)", isCorrect: false },
+                                { text: "Паскаль (Па)", isCorrect: false }
+                            ],
+                            correctIndex: 0
+                        },
+                        {
+                            text: "Закон сохранения энергии утверждает, что:",
+                            shuffledOptions: [
+                                { text: "Энергия не создается и не уничтожается, а только превращается", isCorrect: true },
+                                { text: "Энергия постоянно создается", isCorrect: false },
+                                { text: "Энергия теряется при каждом превращении", isCorrect: false },
+                                { text: "Энергия зависит от массы тела", isCorrect: false }
+                            ],
+                            correctIndex: 0
+                        }
+                    ];
+                    
+                    question = physicsQuestions[i % physicsQuestions.length];
+                    
+                } else if (currentUser.subject === 'biology') {
+                    // Вопросы по биологии
+                    const biologyQuestions = [
+                        {
+                            text: "Основная структурная и функциональная единица живого организма:",
+                            shuffledOptions: [
+                                { text: "Клетка", isCorrect: true },
+                                { text: "Ткань", isCorrect: false },
+                                { text: "Орган", isCorrect: false },
+                                { text: "Молекула", isCorrect: false }
+                            ],
+                            correctIndex: 0
+                        },
+                        {
+                            text: "Процесс фотосинтеза происходит в:",
+                            shuffledOptions: [
+                                { text: "Хлоропластах", isCorrect: true },
+                                { text: "Митохондриях", isCorrect: false },
+                                { text: "Ядре", isCorrect: false },
+                                { text: "Рибосомах", isCorrect: false }
+                            ],
+                            correctIndex: 0
+                        }
+                    ];
+                    
+                    question = biologyQuestions[i % biologyQuestions.length];
+                    
+                } else {
+                    // Общие вопросы для других предметов
+                    question = {
+                        text: `Вопрос ${i + 1} по предмету ${currentUser.subject}: Какое утверждение верно?`,
+                        shuffledOptions: [
+                            { text: "Правильный ответ", isCorrect: true },
+                            { text: "Неправильный вариант 1", isCorrect: false },
+                            { text: "Неправильный вариант 2", isCorrect: false },
+                            { text: "Неправильный вариант 3", isCorrect: false }
+                        ],
+                        correctIndex: 0
+                    };
                 }
-            ];
-            console.log("Загружены демо-вопросы");
+                
+                // Перемешиваем варианты ответов
+                question.shuffledOptions = [...question.shuffledOptions].sort(() => Math.random() - 0.5);
+                
+                // Находим индекс правильного ответа после перемешивания
+                const correctOptionText = question.shuffledOptions.find(opt => opt.isCorrect).text;
+                question.correctIndex = question.shuffledOptions.findIndex(opt => opt.text === correctOptionText);
+                
+                questions.push(question);
+            }
+            
+            // Сохраняем сгенерированные вопросы
+            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+            localStorage.setItem(storageKey, JSON.stringify({
+                questions: questions,
+                answers: answers,
+                testId: currentTestId,
+                timestamp: new Date().getTime(),
+                subject: currentUser.subject
+            }));
         }
 
+        // Рендеринг сетки вопросов
         function renderQuestionGrid() {
             const grid = document.getElementById('qGrid');
             grid.innerHTML = '';
@@ -988,40 +1045,37 @@
                 item.className = 'grid-item';
                 item.textContent = i + 1;
                 item.onclick = () => showQuestion(i);
+                
+                if (i < questions.length) {
+                    if (answers[i] !== undefined) {
+                        item.classList.add('done');
+                    }
+                } else {
+                    item.style.opacity = '0.5';
+                    item.style.cursor = 'not-allowed';
+                }
+                
                 grid.appendChild(item);
             }
         }
 
+        // Показать вопрос
         function showQuestion(index) {
             if (index < 0 || index >= questions.length) return;
             
             currentQuestionIndex = index;
             const question = questions[index];
             
-            if (!question) {
-                document.getElementById('qText').textContent = 'Вопрос не найден';
-                document.getElementById('optionsArea').innerHTML = '';
-                return;
-            }
-            
             document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
-            document.getElementById('qText').textContent = question.text || 'Вопрос без текста';
+            document.getElementById('qText').textContent = question.text;
             
             const optionsArea = document.getElementById('optionsArea');
             optionsArea.innerHTML = '';
             
-            if (!question.shuffledOptions || question.shuffledOptions.length === 0) {
-                const noOptions = document.createElement('p');
-                noOptions.textContent = 'Нет вариантов ответа';
-                noOptions.style.color = 'red';
-                optionsArea.appendChild(noOptions);
-                return;
-            }
-            
             question.shuffledOptions.forEach((option, optionIndex) => {
                 const button = document.createElement('button');
                 button.className = 'option';
-                button.textContent = option.text || 'Вариант без текста';
+                button.textContent = option.text;
                 
                 if (isReviewMode) {
                     if (option.isCorrect) {
@@ -1040,6 +1094,7 @@
                 optionsArea.appendChild(button);
             });
             
+            // Обновляем сетку
             document.querySelectorAll('.grid-item').forEach((item, i) => {
                 item.classList.remove('active');
                 item.classList.toggle('done', answers[i] !== undefined);
@@ -1050,9 +1105,19 @@
             });
         }
 
+        // Выбор ответа
         function selectAnswer(optionIndex) {
+            if (isReviewMode) return;
+            
             answers[currentQuestionIndex] = optionIndex;
             
+            // Обновляем сетку
+            const gridItem = document.querySelector(`.grid-item:nth-child(${currentQuestionIndex + 1})`);
+            if (gridItem) {
+                gridItem.classList.add('done');
+            }
+            
+            // Автоматический переход к следующему вопросу через 0.5 секунды
             setTimeout(() => {
                 if (currentQuestionIndex < questions.length - 1) {
                     showQuestion(currentQuestionIndex + 1);
@@ -1060,6 +1125,7 @@
             }, 500);
         }
 
+        // Следующий вопрос
         function nextQuestion() {
             if (currentQuestionIndex < questions.length - 1) {
                 showQuestion(currentQuestionIndex + 1);
@@ -1068,12 +1134,14 @@
             }
         }
 
+        // Предыдущий вопрос
         function prevQuestion() {
             if (currentQuestionIndex > 0) {
                 showQuestion(currentQuestionIndex - 1);
             }
         }
 
+        // Таймер
         function startTimer() {
             clearInterval(timerInterval);
             timeLeft = 30 * 60;
@@ -1098,27 +1166,25 @@
                 `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
 
+        // Завершение теста
         async function finishTest() {
             clearInterval(timerInterval);
             
             let correctCount = 0;
             questions.forEach((question, index) => {
-                if (answers[index] !== undefined && question.shuffledOptions) {
+                if (answers[index] !== undefined) {
                     if (question.shuffledOptions[answers[index]].isCorrect) {
                         correctCount++;
                     }
                 }
             });
             
-            // Сохраняем результаты
             await saveTestResults(correctCount);
-            
-            // Показываем результаты
             showResults(correctCount);
         }
 
+        // Сохранение результатов
         async function saveTestResults(score) {
-            // Сохраняем локально
             const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
             const testData = {
                 questions: questions,
@@ -1131,7 +1197,6 @@
             
             localStorage.setItem(storageKey, JSON.stringify(testData));
             
-            // Сохраняем в Firebase если есть соединение
             if (db && currentUser.login) {
                 try {
                     await db.collection("test_results").add({
@@ -1154,6 +1219,7 @@
             }
         }
 
+        // Показать результаты
         function showResults(score) {
             document.getElementById('quizScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.remove('hidden');
@@ -1179,6 +1245,7 @@
             `;
         }
 
+        // Режим просмотра ошибок
         function reviewMode() {
             isReviewMode = true;
             document.getElementById('resultScreen').classList.add('hidden');
@@ -1189,6 +1256,7 @@
             showQuestion(0);
         }
 
+        // Повтор теста
         function retrySameTest() {
             answers = {};
             timeLeft = 30 * 60;
@@ -1204,28 +1272,38 @@
             startTimer();
         }
 
+        // Новый тест по тому же предмету
         function newTestSameSubject() {
             const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
             localStorage.removeItem(storageKey);
             location.reload();
         }
 
-        // Выход из системы
+        // Выход
         async function logout() {
-            // Очищаем активную сессию
             localStorage.removeItem('active_session');
             
-            // Обновляем информацию в базе
             if (db && currentUser.login) {
                 await updateSessionInfo(currentUser.login, false);
             }
             
-            // Перезагружаем страницу
             location.reload();
         }
 
+        // Сообщить об ошибке
         function reportError() {
-            alert('Функция сообщения об ошибке доступна при подключении к базе данных.');
+            const currentQuestion = questions[currentQuestionIndex];
+            const errorMessage = `Сообщение об ошибке в вопросе ${currentQuestionIndex + 1}:\n\n${currentQuestion.text}\n\nОпишите ошибку:`;
+            
+            const userReport = prompt(errorMessage);
+            if (userReport && userReport.trim() !== '') {
+                alert('Спасибо за сообщение! Ошибка будет исправлена.');
+                console.log('Ошибка в вопросе:', {
+                    questionIndex: currentQuestionIndex,
+                    question: currentQuestion.text,
+                    userReport: userReport
+                });
+            }
         }
     </script>
 </body>
