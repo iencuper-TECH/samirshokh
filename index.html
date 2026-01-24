@@ -430,59 +430,15 @@
                     </select>
                 </div>
                 
-                        // Основная функция входа - ПРОСТАЯ РАБОЧАЯ ВЕРСИЯ
-        async function tryLogin(event) {
-            event.preventDefault();
-            console.log("🟢 КНОПКА РАБОТАЕТ!");
-            
-            // 1. Получаем данные
-            const name = document.getElementById('nameInput').value.trim();
-            const phone = document.getElementById('phoneInput').value.trim();
-            const subject = document.getElementById('subjectSelect').value;
-            
-            console.log("Введено:", {name, phone, subject});
-            
-            // 2. Проверяем
-            if (!name || !phone) {
-                alert('Введите имя и телефон!');
-                return;
-            }
-            
-            // 3. Немедленно переключаем экраны
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('quizScreen').classList.remove('hidden');
-            
-            // 4. Показываем тестовый вопрос
-            document.getElementById('qText').textContent = "Тест работает! Ответьте на вопрос.";
-            document.getElementById('qCounter').textContent = "1 / 2";
-            
-            // 5. Создаем варианты ответов
-            const optionsArea = document.getElementById('optionsArea');
-            optionsArea.innerHTML = '';
-            
-            const options = [
-                {text: "Вариант 1", correct: false},
-                {text: "Вариант 2 (правильный)", correct: true},
-                {text: "Вариант 3", correct: false},
-                {text: "Вариант 4", correct: false}
-            ];
-            
-            options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'option';
-                btn.textContent = opt.text;
-                btn.onclick = function() {
-                    alert(opt.correct ? 'Правильно!' : 'Неправильно!');
-                    document.querySelectorAll('.grid-item')[0].classList.add('done');
-                };
-                optionsArea.appendChild(btn);
-            });
-            
-            // 6. Запускаем таймер
-            startTimer();
-            
-            console.log("✅ ТЕСТ ЗАПУЩЕН!");
-        }
+                <button class="btn" onclick="tryLogin(event)">
+                    <i class="fas fa-play-circle"></i> Начать тестирование
+                </button>
+                
+                <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">
+                    <i class="fas fa-question-circle"></i> Техническая поддержка
+                </a>
+            </div>
+        </div>
 
         <!-- Экран теста -->
         <div id="quizScreen" class="card hidden">
@@ -548,11 +504,11 @@
         </div>
     </div>
 
-    <!-- Подключаем Firebase -->
+    <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Подключаем общий config.js -->
+    <!-- Config file -->
     <script src="config.js"></script>
 
     <script>
@@ -565,163 +521,164 @@
         let currentUser = {};
         let isReviewMode = false;
         let currentTestId = null;
-        let db;
+        let db = null;
 
         // Генерация deviceId
         let deviceId = localStorage.getItem('device_id') || 'web_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('device_id', deviceId);
 
-                        // Восстановление данных пользователя
-                const savedUser = localStorage.getItem('lastUser');
-                if (savedUser) {
-                    try {
-                        const user = JSON.parse(savedUser);
-                        document.getElementById('nameInput').value = user.name || '';
-                        document.getElementById('phoneInput').value = user.phone || '';
-                        if (user.subject) {
-                            document.getElementById('subjectSelect').value = user.subject;
-                        }
-                    } catch(e) {
-                        console.log('Не удалось восстановить данные');
-                    }
+        // Восстановление данных пользователя
+        const savedUser = localStorage.getItem('lastUser');
+        if (savedUser) {
+            try {
+                const user = JSON.parse(savedUser);
+                document.getElementById('nameInput').value = user.name || '';
+                document.getElementById('phoneInput').value = user.phone || '';
+                if (user.subject) {
+                    document.getElementById('subjectSelect').value = user.subject;
                 }
-            } else {
-                console.error('Firebase config не найден в config.js');
-                alert('Ошибка конфигурации. Проверьте файл config.js');
+            } catch(e) {
+                console.log('Не удалось восстановить данные');
             }
-        });
+        }
 
-        // УПРОЩЕННАЯ ФУНКЦИЯ ВХОДА - ДЛЯ ТЕСТА
+        // Инициализация Firebase (если config существует)
+        if (window.firebaseConfig) {
+            try {
+                firebase.initializeApp(window.firebaseConfig);
+                db = firebase.firestore();
+                console.log('Firebase успешно инициализирован');
+            } catch (error) {
+                console.error('Ошибка инициализации Firebase:', error);
+            }
+        } else {
+            console.warn('Firebase config не найден. Работаем в оффлайн режиме.');
+        }
+
+        // ОСНОВНАЯ ФУНКЦИЯ ВХОДА
         async function tryLogin(event) {
             event.preventDefault();
-            console.log("🔘 Кнопка 'Начать тестирование' нажата");
+            console.log("🟢 КНОПКА РАБОТАЕТ!");
             
+            // Получаем данные из формы
             const name = document.getElementById('nameInput').value.trim();
             let phone = document.getElementById('phoneInput').value.trim();
             const subject = document.getElementById('subjectSelect').value;
-            const btn = event.target;
+            const btn = event.currentTarget;
             
-            if (!name || !phone || !subject) {
-                alert('Заполните все поля!');
+            console.log("Введено:", {name, phone, subject});
+            
+            // Проверяем заполненность полей
+            if (!name || !phone) {
+                alert('Введите имя и номер телефона!');
                 return;
             }
             
+            if (!subject) {
+                alert('Выберите предмет!');
+                return;
+            }
+            
+            // Форматируем телефон
             phone = phone.replace(/\D/g, '');
             
-            // Форматирование номера
             if (phone.startsWith('8') && phone.length === 11) {
                 phone = '998' + phone.substring(1);
             } else if (phone.startsWith('7') && phone.length === 11) {
                 phone = '998' + phone.substring(1);
             } else if (phone.length === 10 && phone.startsWith('9')) {
-                phone = '998' + phone.substring(1);
+                phone = '998' + phone;
             } else if (phone.length === 9) {
                 phone = '998' + phone;
             }
             
-            console.log("Введены данные:", { name, phone, subject });
+            if (!phone.startsWith('998') || phone.length !== 12) {
+                alert('Введите корректный номер телефона Узбекистана (например: 998901234567)');
+                return;
+            }
             
+            // Сохраняем пользователя
+            currentUser = { name, phone, subject };
+            currentTestId = Date.now().toString(36);
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('lastUser', JSON.stringify({
+                name: name,
+                phone: phone,
+                subject: subject
+            }));
+            
+            // Блокируем кнопку
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка вопросов...';
             
             try {
-                // Проверяем доступ пользователя (если нужно)
-                if (db) {
-                    const userRef = db.collection("users").doc(phone);
-                    const userDoc = await userRef.get();
-                    
-                    if (!userDoc.exists) {
-                        alert('❌ Ваш номер не найден в системе. Обратитесь к преподавателю.');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
-                        return;
-                    }
-                    
-                    // Обновляем информацию
-                    await userRef.set({
-                        name: name,
-                        deviceId: deviceId,
-                        lastLogin: new Date(),
-                        lastSubject: subject
-                    }, { merge: true });
-                }
-                
-                // Сохраняем локально
-                localStorage.setItem('lastUser', JSON.stringify({
-                    name: name,
-                    phone: phone,
-                    subject: subject
-                }));
-                
-                currentUser = { name, phone, subject };
-                currentTestId = Date.now().toString(36);
-                
                 // Загружаем вопросы
                 await loadQuestions();
                 
-                // Переходим к тесту
+                // Переключаем экраны
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('quizScreen').classList.remove('hidden');
+                
+                // Инициализируем тест
                 renderQuestionGrid();
                 showQuestion(0);
                 startTimer();
                 
-                console.log("✅ Тест начат успешно");
+                console.log("🟢 ТЕСТ ЗАПУЩЕН!");
                 
             } catch (error) {
-                console.error('Ошибка:', error);
-                
-                // Если ошибка с Firebase, показываем тест без него
-                if (error.code === 'permission-denied' || error.code === 'unavailable') {
-                    alert('⚠️ Ошибка соединения. Запускаем тест в оффлайн режиме.');
-                    currentUser = { name, phone, subject };
-                    
-                    // Загружаем тестовые вопросы
-                    loadDemoQuestions();
-                    
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('quizScreen').classList.remove('hidden');
-                    renderQuestionGrid();
-                    showQuestion(0);
-                    startTimer();
-                } else {
-                    alert('Ошибка: ' + error.message);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
-                }
+                console.error('Ошибка при запуске теста:', error);
+                alert('Ошибка загрузки теста. Попробуйте еще раз.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
 
-        // ДЕМО ВОПРОСЫ (если нет интернета)
+        // ДЕМО ВОПРОСЫ (если нет интернета или вопросов)
         function loadDemoQuestions() {
             questions = [
                 {
-                    text: "Пример вопроса 1: Что такое сила тяжести?",
+                    text: "Вопрос 1: Что такое сила тяжести?",
                     shuffledOptions: [
                         { text: "Сила притяжения Земли", isCorrect: true },
                         { text: "Сила трения", isCorrect: false },
                         { text: "Сила упругости", isCorrect: false },
                         { text: "Сила Архимеда", isCorrect: false }
-                    ]
+                    ],
+                    correctIndex: 0
                 },
                 {
-                    text: "Пример вопроса 2: Формула второго закона Ньютона?",
+                    text: "Вопрос 2: Формула второго закона Ньютона?",
                     shuffledOptions: [
                         { text: "F = ma", isCorrect: true },
                         { text: "E = mc²", isCorrect: false },
                         { text: "P = mgh", isCorrect: false },
                         { text: "V = S/t", isCorrect: false }
-                    ]
+                    ],
+                    correctIndex: 0
+                },
+                {
+                    text: "Вопрос 3: Как называется единица измерения силы?",
+                    shuffledOptions: [
+                        { text: "Ньютон", isCorrect: true },
+                        { text: "Джоуль", isCorrect: false },
+                        { text: "Ватт", isCorrect: false },
+                        { text: "Паскаль", isCorrect: false }
+                    ],
+                    correctIndex: 0
                 }
             ];
             console.log("Загружены демо-вопросы");
         }
 
-        // ЗАГРУЗКА ВОПРОСОВ ИЗ БАЗЫ
+        // ЗАГРУЗКА ВОПРОСОВ
         async function loadQuestions() {
             const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
             const savedTest = localStorage.getItem(storageKey);
             
+            // Проверяем сохраненный тест (не старше 24 часов)
             if (savedTest) {
                 try {
                     const parsed = JSON.parse(savedTest);
@@ -729,116 +686,130 @@
                     const currentTime = new Date().getTime();
                     const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
                     
-                    if (hoursDiff < 24) {
+                    if (hoursDiff < 24 && parsed.questions && parsed.questions.length > 0) {
                         questions = parsed.questions;
-                        currentTestId = parsed.testId;
-                        console.log('Используем сохраненный тест');
+                        currentTestId = parsed.testId || currentTestId;
+                        console.log('Используем сохраненный тест из localStorage');
                         return;
                     }
                 } catch(e) {
-                    console.log('Ошибка чтения сохраненного теста');
+                    console.log('Ошибка чтения сохраненного теста:', e);
                 }
             }
             
-            // Загружаем новые вопросы
-            await loadNewQuestions(storageKey);
-        }
-
-        async function loadNewQuestions(storageKey) {
-            try {
-                if (!db) {
-                    throw new Error('База данных не доступна');
-                }
-                
-                const snapshot = await db.collection("questions")
-                    .where("subject", "==", currentUser.subject)
-                    .get();
-                
-                if (snapshot.empty) {
-                    throw new Error('По этому предмету пока нет вопросов');
-                }
-                
-                const allQuestions = [];
-                snapshot.forEach(doc => allQuestions.push({ id: doc.id, ...doc.data() }));
-                
-                // Выбираем случайные 30 вопросов
-                const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-                questions = shuffled.slice(0, 30);
-                
-                // Перемешиваем варианты ответов
-                questions.forEach(q => {
-                    if (!q.options || q.options.length === 0) {
+            // Пробуем загрузить с Firebase
+            if (db) {
+                try {
+                    const snapshot = await db.collection("questions")
+                        .where("subject", "==", currentUser.subject)
+                        .get();
+                    
+                    if (!snapshot.empty) {
+                        const allQuestions = [];
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            allQuestions.push({ 
+                                id: doc.id, 
+                                text: data.text,
+                                options: data.options || [],
+                                correct: data.correct || 0
+                            });
+                        });
+                        
+                        // Выбираем случайные 30 вопросов или меньше, если вопросов меньше
+                        const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+                        questions = shuffled.slice(0, 30);
+                        
+                        // Перемешиваем варианты ответов
+                        questions.forEach(q => {
+                            if (!q.options || q.options.length === 0) {
+                                return;
+                            }
+                            
+                            const options = q.options.map((text, index) => ({
+                                text,
+                                isCorrect: index === q.correct
+                            }));
+                            
+                            options.sort(() => Math.random() - 0.5);
+                            q.shuffledOptions = options;
+                            q.correctIndex = options.findIndex(opt => opt.isCorrect);
+                        });
+                        
+                        console.log(`Загружено ${questions.length} вопросов из Firebase`);
+                        
+                        // Сохраняем в localStorage
+                        localStorage.setItem(storageKey, JSON.stringify({
+                            questions: questions,
+                            testId: currentTestId,
+                            timestamp: new Date().getTime(),
+                            subject: currentUser.subject
+                        }));
+                        
                         return;
                     }
-                    
-                    const options = q.options.map((text, index) => ({
-                        text,
-                        isCorrect: index === q.correct
-                    }));
-                    
-                    options.sort(() => Math.random() - 0.5);
-                    q.shuffledOptions = options;
-                    q.correctIndex = options.findIndex(opt => opt.isCorrect);
-                });
-                
-                // Сохраняем в localStorage
-                localStorage.setItem(storageKey, JSON.stringify({
-                    questions: questions,
-                    testId: currentTestId,
-                    timestamp: new Date().getTime(),
-                    subject: currentUser.subject
-                }));
-                
-                console.log(`Загружено ${questions.length} вопросов`);
-                
-            } catch (error) {
-                console.error('Ошибка загрузки вопросов:', error);
-                
-                // Если нет вопросов, показываем демо
-                if (questions.length === 0) {
-                    loadDemoQuestions();
-                    alert('⚠️ Вопросы не загрузились. Показываем демо-вопросы.');
+                } catch (error) {
+                    console.error('Ошибка загрузки из Firebase:', error);
                 }
             }
+            
+            // Если не удалось загрузить, используем демо-вопросы
+            console.log('Используем демо-вопросы');
+            loadDemoQuestions();
         }
 
-        // Остальные функции (renderQuestionGrid, showQuestion, selectAnswer и т.д.)
+        // РЕНДЕР СЕТКИ ВОПРОСОВ
         function renderQuestionGrid() {
             const grid = document.getElementById('qGrid');
             grid.innerHTML = '';
             
-            questions.forEach((_, index) => {
+            for (let i = 0; i < questions.length; i++) {
                 const item = document.createElement('div');
                 item.className = 'grid-item';
-                item.textContent = index + 1;
-                item.onclick = () => showQuestion(index);
+                item.textContent = i + 1;
+                item.onclick = () => showQuestion(i);
                 grid.appendChild(item);
-            });
+            }
         }
 
+        // ПОКАЗ ВОПРОСА
         function showQuestion(index) {
+            if (index < 0 || index >= questions.length) return;
+            
             currentQuestionIndex = index;
             const question = questions[index];
             
-            if (!question) return;
+            if (!question) {
+                document.getElementById('qText').textContent = 'Вопрос не найден';
+                document.getElementById('optionsArea').innerHTML = '';
+                return;
+            }
             
+            // Обновляем счетчик
             document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
-            document.getElementById('qText').innerHTML = question.text ? question.text.replace(/\n/g, '<br>') : 'Вопрос не загружен';
             
+            // Показываем текст вопроса
+            document.getElementById('qText').textContent = question.text || 'Вопрос без текста';
+            
+            // Показываем варианты ответов
             const optionsArea = document.getElementById('optionsArea');
             optionsArea.innerHTML = '';
             
             if (!question.shuffledOptions || question.shuffledOptions.length === 0) {
-                optionsArea.innerHTML = '<p style="color: red;">Ошибка: нет вариантов ответа</p>';
+                const noOptions = document.createElement('p');
+                noOptions.textContent = 'Нет вариантов ответа';
+                noOptions.style.color = 'red';
+                optionsArea.appendChild(noOptions);
                 return;
             }
             
             question.shuffledOptions.forEach((option, optionIndex) => {
                 const button = document.createElement('button');
                 button.className = 'option';
-                button.innerHTML = option.text ? option.text.replace(/\n/g, '<br>') : 'Вариант не загружен';
+                button.textContent = option.text || 'Вариант без текста';
                 
                 if (isReviewMode) {
+                    // В режиме просмотра показываем правильные/неправильные ответы
                     if (option.isCorrect) {
                         button.classList.add('correct');
                     }
@@ -846,6 +817,7 @@
                         button.classList.add('wrong');
                     }
                 } else {
+                    // В обычном режиме показываем выбранный ответ
                     if (answers[index] === optionIndex) {
                         button.classList.add('selected');
                     }
@@ -855,45 +827,50 @@
                 optionsArea.appendChild(button);
             });
             
-            // Обновляем активный вопрос в сетке
+            // Обновляем сетку вопросов
             document.querySelectorAll('.grid-item').forEach((item, i) => {
                 item.classList.remove('active');
+                item.classList.toggle('done', answers[i] !== undefined);
+                
                 if (i === index) {
                     item.classList.add('active');
-                }
-                if (answers[i] !== undefined) {
-                    item.classList.add('done');
                 }
             });
         }
 
+        // ВЫБОР ОТВЕТА
         function selectAnswer(optionIndex) {
             answers[currentQuestionIndex] = optionIndex;
-            document.querySelectorAll('.grid-item')[currentQuestionIndex].classList.add('done');
-            showQuestion(currentQuestionIndex);
             
+            // Переходим к следующему вопросу через 0.5 секунды
             setTimeout(() => {
                 if (currentQuestionIndex < questions.length - 1) {
-                    nextQuestion();
+                    showQuestion(currentQuestionIndex + 1);
                 }
             }, 500);
         }
 
+        // СЛЕДУЮЩИЙ ВОПРОС
         function nextQuestion() {
             if (currentQuestionIndex < questions.length - 1) {
                 showQuestion(currentQuestionIndex + 1);
+            } else {
+                alert('Это последний вопрос!');
             }
         }
 
+        // ПРЕДЫДУЩИЙ ВОПРОС
         function prevQuestion() {
             if (currentQuestionIndex > 0) {
                 showQuestion(currentQuestionIndex - 1);
             }
         }
 
+        // ЗАПУСК ТАЙМЕРА
         function startTimer() {
             clearInterval(timerInterval);
-            timeLeft = 30 * 60;
+            timeLeft = 30 * 60; // 30 минут
+            
             updateTimerDisplay();
             
             timerInterval = setInterval(() => {
@@ -907,6 +884,7 @@
             }, 1000);
         }
 
+        // ОБНОВЛЕНИЕ ТАЙМЕРА
         function updateTimerDisplay() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
@@ -914,63 +892,71 @@
                 `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
 
+        // ЗАВЕРШЕНИЕ ТЕСТА
         async function finishTest() {
             clearInterval(timerInterval);
             
-            let score = 0;
+            // Подсчет результатов
+            let correctCount = 0;
             questions.forEach((question, index) => {
                 if (answers[index] !== undefined && question.shuffledOptions) {
                     if (question.shuffledOptions[answers[index]].isCorrect) {
-                        score++;
+                        correctCount++;
                     }
                 }
             });
             
-            // Сохранение результата
-            try {
-                if (db) {
+            // Сохранение результатов в Firebase
+            if (db) {
+                try {
                     await db.collection("results").add({
                         studentName: currentUser.name,
                         phone: currentUser.phone,
                         subject: currentUser.subject,
-                        score: score,
+                        score: correctCount,
                         total: questions.length,
-                        percentage: Math.round((score / questions.length) * 100),
+                        percentage: Math.round((correctCount / questions.length) * 100),
                         testId: currentTestId,
                         date: new Date(),
-                        answers: answers,
-                        timeSpent: (30 * 60) - timeLeft,
-                        platform: 'github_pages'
+                        timeSpent: (30 * 60) - timeLeft
                     });
+                    console.log('Результаты сохранены в Firebase');
+                } catch (error) {
+                    console.error('Ошибка сохранения результатов:', error);
                 }
-            } catch (error) {
-                console.error('Ошибка сохранения:', error);
             }
             
             // Показ результатов
-            showResults(score);
+            showResults(correctCount);
         }
 
+        // ПОКАЗ РЕЗУЛЬТАТОВ
         function showResults(score) {
             document.getElementById('quizScreen').classList.add('hidden');
             document.getElementById('resultScreen').classList.remove('hidden');
             
+            const percentage = Math.round((score / questions.length) * 100);
             document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
             
-            const percentage = Math.round((score / questions.length) * 100);
             let message = '';
-            if (percentage >= 90) message = 'Отлично! Вы показали прекрасный результат!';
-            else if (percentage >= 70) message = 'Хорошо! Вы хорошо справились с тестом.';
-            else if (percentage >= 50) message = 'Удовлетворительно. Есть над чем поработать.';
-            else message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
+            if (percentage >= 90) {
+                message = 'Отлично! Вы показали прекрасный результат!';
+            } else if (percentage >= 70) {
+                message = 'Хорошо! Вы хорошо справились с тестом.';
+            } else if (percentage >= 50) {
+                message = 'Удовлетворительно. Есть над чем поработать.';
+            } else {
+                message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
+            }
             
             document.getElementById('resultMessage').innerHTML = `
                 ${message}<br><br>
                 <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
-                Результат сохранен и отправлен преподавателю.
+                Ваш результат сохранен.
             `;
         }
 
+        // РЕЖИМ ПРОСМОТРА ОШИБОК
         function reviewMode() {
             isReviewMode = true;
             document.getElementById('resultScreen').classList.add('hidden');
@@ -981,6 +967,7 @@
             showQuestion(0);
         }
 
+        // ПОВТОРНАЯ СДАЧА ТЕСТА
         function retrySameTest() {
             answers = {};
             timeLeft = 30 * 60;
@@ -992,20 +979,18 @@
             document.getElementById('reportBtn').style.display = 'block';
             document.querySelector('.navigation').style.display = 'flex';
             
-            document.querySelectorAll('.grid-item').forEach(item => {
-                item.classList.remove('done');
-            });
-            
             showQuestion(0);
             startTimer();
         }
 
+        // НОВЫЙ ТЕСТ ПО ТОМУ ЖЕ ПРЕДМЕТУ
         function newTestSameSubject() {
             const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
             localStorage.removeItem(storageKey);
             location.reload();
         }
 
+        // СООБЩЕНИЕ ОБ ОШИБКЕ
         async function reportError() {
             const question = questions[currentQuestionIndex];
             if (!question) return;
@@ -1013,8 +998,8 @@
             const reason = prompt('Опишите ошибку в этом вопросе:');
             if (!reason) return;
             
-            try {
-                if (db) {
+            if (db) {
+                try {
                     await db.collection("reports").add({
                         questionText: question.text,
                         subject: currentUser.subject,
@@ -1026,11 +1011,12 @@
                     });
                     
                     alert('Спасибо! Ваше сообщение отправлено преподавателю.');
-                } else {
-                    alert('Ошибка: База данных не доступна');
+                } catch (error) {
+                    console.error('Ошибка отправки жалобы:', error);
+                    alert('Ошибка отправки жалобы. Попробуйте позже.');
                 }
-            } catch (error) {
-                alert('Ошибка отправки жалобы. Попробуйте позже.');
+            } else {
+                alert('Невозможно отправить сообщение. База данных не доступна.');
             }
         }
     </script>
