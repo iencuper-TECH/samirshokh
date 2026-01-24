@@ -897,131 +897,54 @@ console.log('Сгенерирован новый тест, вопросов:', q
 }
 // Генерация вопросов по предмету - ТЕПЕРЬ С ЗАГРУЗКОЙ ИЗ БД
 async function generateQuestionsForSubject() {
-questions = [];
-let dbQuestions = [];
+    questions = [];
+    let dbQuestions = [];
 
-if (db) {
-try {
-console.log('Загрузка вопросов из Firebase для:', currentUser.subject);
-// Загружаем ВСЕ вопросы по предмету
-const snapshot = await db.collection('questions')
-.where('subject', '==', currentUser.subject)
-.get();
+    // 1. Пытаемся забрать вопросы из Firebase
+    try {
+        const snapshot = await db.collection('questions')
+            .where('subject', '==', currentUser.subject)
+            .get();
 
-if (!snapshot.empty) {
-snapshot.forEach(doc => {
-let q = doc.data();
-// Перемешиваем варианты ответов
-let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
-opts.sort(() => Math.random() - 0.5);
+        // 2. Если в базе ПУСТО (snapshot.empty), то ругаемся и выходим
+        if (snapshot.empty) {
+            alert('❌ ОШИБКА: В базе данных нет вопросов по предмету: ' + currentUser.subject);
+            location.reload(); // Перезагружаем на логин
+            return;
+        }
 
-// Находим новый индекс правильного ответа
-const correctIdx = opts.findIndex(o => o.isCorrect);
+        // 3. Если вопросы есть, раскладываем их в наш список
+        snapshot.forEach(doc => {
+            let q = doc.data();
+            // Перемешиваем варианты ответов (чтобы не всегда А был верным)
+            let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
+            opts.sort(() => Math.random() - 0.5);
 
-dbQuestions.push({
-text: q.text,
-shuffledOptions: opts,
-correctIndex: correctIdx
-});
-});
-console.log(`Найдено ${dbQuestions.length} вопросов в базе`);
-} else {
-console.log('Вопросов в базе нет, используем резервные');
-}
-} catch (e) {
-console.error('Ошибка загрузки из БД:', e);
-}
-}
+            dbQuestions.push({
+                text: q.text,
+                shuffledOptions: opts,
+                correctIndex: opts.findIndex(o => o.isCorrect)
+            });
+        });
 
-// Если вопросы из базы есть, используем их
-if (dbQuestions.length > 0) {
-// Перемешиваем вопросы
-dbQuestions.sort(() => Math.random() - 0.5);
-// Берем максимум 30
-questions = dbQuestions.slice(0, 30);
-} else {
-// РЕЗЕРВ: Если базы нет или оффлайн, генерируем заглушки чтобы не крашилось
-for (let i = 0; i < 30; i++) {
-let question;
-if (currentUser.subject === 'physics') {
-const physicsQuestions = [
-{
-text: "Второй закон Ньютона формулируется как:",
-shuffledOptions: [
-{ text: "Сила равна произведению массы на ускорение", isCorrect: true },
-{ text: "Действию всегда есть равное и противоположное противодействие", isCorrect: false },
-{ text: "Тело сохраняет состояние покоя или равномерного прямолинейного движения", isCorrect: false },
-{ text: "Энергия не создается и не уничтожается", isCorrect: false }
-],
-correctIndex: 0
-},
-{
-text: "Что такое инерция?",
-shuffledOptions: [
-{ text: "Свойство тел сохранять состояние покоя или равномерного движения", isCorrect: true },
-{ text: "Сила притяжения между телами", isCorrect: false },
-{ text: "Способность тел совершать работу", isCorrect: false },
-{ text: "Изменение скорости тела", isCorrect: false }
-],
-correctIndex: 0
-}
-];
-question = physicsQuestions[i % physicsQuestions.length];
-} else if (currentUser.subject === 'biology') {
-const biologyQuestions = [
-{
-text: "Основная структурная и функциональная единица живого организма:",
-shuffledOptions: [
-{ text: "Клетка", isCorrect: true },
-{ text: "Ткань", isCorrect: false },
-{ text: "Орган", isCorrect: false },
-{ text: "Молекула", isCorrect: false }
-],
-correctIndex: 0
-},
-{
-text: "Процесс фотосинтеза происходит в:",
-shuffledOptions: [
-{ text: "Хлоропластах", isCorrect: true },
-{ text: "Митохондриях", isCorrect: false },
-{ text: "Ядре", isCorrect: false },
-{ text: "Рибосомах", isCorrect: false }
-],
-correctIndex: 0
-}
-];
-question = biologyQuestions[i % biologyQuestions.length];
-} else {
-question = {
-text: `(Резерв) Вопрос ${i + 1} по предмету ${currentUser.subject}. База данных недоступна.`,
-shuffledOptions: [
-{ text: "Правильный ответ", isCorrect: true },
-{ text: "Неправильный вариант 1", isCorrect: false },
-{ text: "Неправильный вариант 2", isCorrect: false },
-{ text: "Неправильный вариант 3", isCorrect: false }
-],
-correctIndex: 0
-};
-}
-// Перемешиваем варианты для резервных вопросов
-if (!question.shuffledOptions[0].text) { // Если не перемешаны
-question.shuffledOptions = [...question.shuffledOptions].sort(() => Math.random() - 0.5);
-const correctOptionText = question.shuffledOptions.find(opt => opt.isCorrect).text;
-question.correctIndex = question.shuffledOptions.findIndex(opt => opt.text === correctOptionText);
-}
-questions.push(question);
-}
-}
+        // 4. Перемешиваем сами вопросы и берем максимум 30 штук
+        questions = dbQuestions.sort(() => Math.random() - 0.5).slice(0, 30);
+        
+        // 5. Сохраняем "слепок" теста в память браузера (чтобы не пропал при обновлении)
+        localStorage.setItem(`test_${currentUser.login}_${currentUser.subject}`, JSON.stringify({
+            questions: questions,
+            answers: {},
+            testId: currentTestId,
+            timestamp: new Date().getTime(),
+            subject: currentUser.subject
+        }));
 
-// Сохраняем сгенерированные вопросы
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-localStorage.setItem(storageKey, JSON.stringify({
-questions: questions,
-answers: answers,
-testId: currentTestId,
-timestamp: new Date().getTime(),
-subject: currentUser.subject
-}));
+        console.log("✅ Успешно загружено вопросов из базы:", questions.length);
+
+    } catch (e) {
+        console.error('Ошибка загрузки:', e);
+        alert('Критическая ошибка базы: ' + e.message);
+    }
 }
 // Рендеринг сетки вопросов
 function renderQuestionGrid() {
