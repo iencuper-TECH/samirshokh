@@ -1,10 +1,11 @@
+// config.js
 const firebaseConfig = {
-    apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
-    authDomain: "test-by-samirshokh.firebaseapp.com",
-    projectId: "test-by-samirshokh",
-    storageBucket: "test-by-samirshokh.firebasestorage.app",
-    messagingSenderId: "105940641906",
-    appId: "1:105940641906:web:effee678673ae954b53aeb"
+  apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
+  authDomain: "test-by-samirshokh.firebaseapp.com",
+  projectId: "test-by-samirshokh",
+  storageBucket: "test-by-samirshokh.firebasestorage.app",
+  messagingSenderId: "105940641906",
+  appId: "1:105940641906:web:effee678673ae954b53aeb"
 };
 
 window.firebaseConfig = firebaseConfig;

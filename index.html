@@ -430,15 +430,59 @@
                     </select>
                 </div>
                 
-                <button class="btn" onclick="tryLogin(event)">
-                    <i class="fas fa-play-circle"></i> Начать тестирование
-                </button>
-                
-                <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">
-                    <i class="fas fa-question-circle"></i> Техническая поддержка
-                </a>
-            </div>
-        </div>
+                        // Основная функция входа - ПРОСТАЯ РАБОЧАЯ ВЕРСИЯ
+        async function tryLogin(event) {
+            event.preventDefault();
+            console.log("🟢 КНОПКА РАБОТАЕТ!");
+            
+            // 1. Получаем данные
+            const name = document.getElementById('nameInput').value.trim();
+            const phone = document.getElementById('phoneInput').value.trim();
+            const subject = document.getElementById('subjectSelect').value;
+            
+            console.log("Введено:", {name, phone, subject});
+            
+            // 2. Проверяем
+            if (!name || !phone) {
+                alert('Введите имя и телефон!');
+                return;
+            }
+            
+            // 3. Немедленно переключаем экраны
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            
+            // 4. Показываем тестовый вопрос
+            document.getElementById('qText').textContent = "Тест работает! Ответьте на вопрос.";
+            document.getElementById('qCounter').textContent = "1 / 2";
+            
+            // 5. Создаем варианты ответов
+            const optionsArea = document.getElementById('optionsArea');
+            optionsArea.innerHTML = '';
+            
+            const options = [
+                {text: "Вариант 1", correct: false},
+                {text: "Вариант 2 (правильный)", correct: true},
+                {text: "Вариант 3", correct: false},
+                {text: "Вариант 4", correct: false}
+            ];
+            
+            options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option';
+                btn.textContent = opt.text;
+                btn.onclick = function() {
+                    alert(opt.correct ? 'Правильно!' : 'Неправильно!');
+                    document.querySelectorAll('.grid-item')[0].classList.add('done');
+                };
+                optionsArea.appendChild(btn);
+            });
+            
+            // 6. Запускаем таймер
+            startTimer();
+            
+            console.log("✅ ТЕСТ ЗАПУЩЕН!");
+        }
 
         <!-- Экран теста -->
         <div id="quizScreen" class="card hidden">
@@ -527,23 +571,7 @@
         let deviceId = localStorage.getItem('device_id') || 'web_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('device_id', deviceId);
 
-        // Инициализация Firebase
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("Страница загружается...");
-            
-            if (typeof firebaseConfig !== 'undefined') {
-                console.log("Config найден, инициализируем Firebase");
-                
-                // Проверяем, не инициализирован ли уже Firebase
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-                
-                // Теперь создаем db
-                db = firebase.firestore();
-                console.log('✅ Firebase готов к работе');
-                
-                // Восстановление данных пользователя
+                        // Восстановление данных пользователя
                 const savedUser = localStorage.getItem('lastUser');
                 if (savedUser) {
                     try {
@@ -553,13 +581,12 @@
                         if (user.subject) {
                             document.getElementById('subjectSelect').value = user.subject;
                         }
-                        console.log("Данные восстановлены");
                     } catch(e) {
                         console.log('Не удалось восстановить данные');
                     }
                 }
             } else {
-                console.error('❌ ОШИБКА: Firebase config не найден в config.js');
+                console.error('Firebase config не найден в config.js');
                 alert('Ошибка конфигурации. Проверьте файл config.js');
             }
         });
