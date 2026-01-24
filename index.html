@@ -216,6 +216,7 @@
             padding: 30px;
         }
         
+        /* ИСПРАВЛЕНО: Добавлены свойства для переноса длинных текстов */
         .question-text {
             font-size: 18px;
             line-height: 1.6;
@@ -225,6 +226,11 @@
             padding: 20px;
             border-radius: 12px;
             border-left: 4px solid var(--primary);
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
+            max-height: none;
+            overflow: visible;
         }
         
         .options-container {
@@ -233,6 +239,7 @@
             gap: 12px;
         }
         
+        /* ИСПРАВЛЕНО: Добавлены свойства для переноса длинных текстов */
         .option {
             padding: 18px 20px;
             background: white;
@@ -243,6 +250,8 @@
             cursor: pointer;
             transition: all 0.2s;
             word-break: break-word;
+            white-space: normal;
+            line-height: 1.4;
         }
         
         .option:hover {
@@ -334,6 +343,7 @@
             color: var(--danger);
         }
         
+        /* ИСПРАВЛЕНО: Добавлены медиа-запросы для мобильных */
         @media (max-width: 480px) {
             .container {
                 padding: 10px;
@@ -354,6 +364,36 @@
             .question-grid {
                 grid-template-columns: repeat(5, 1fr);
                 padding: 15px;
+            }
+            
+            /* Дополнительные исправления для мобильных */
+            .question-text {
+                font-size: 16px;
+                padding: 18px;
+                line-height: 1.5;
+            }
+            
+            .option {
+                font-size: 15px;
+                padding: 16px;
+                line-height: 1.4;
+            }
+        }
+        
+        /* Для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .question-text {
+                font-size: 15px;
+                padding: 16px;
+            }
+            
+            .option {
+                font-size: 14px;
+                padding: 14px;
+            }
+            
+            .question-grid {
+                grid-template-columns: repeat(4, 1fr);
             }
         }
     </style>
@@ -472,24 +512,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Конфигурационный файл (один для всех) -->
-    <script>
-        // Конфигурация Firebase (такая же как в локальном config.js)
-        const firebaseConfig = {
-            apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
-            authDomain: "test-by-samirshokh.firebaseapp.com",
-            projectId: "test-by-samirshokh",
-            storageBucket: "test-by-samirshokh.firebasestorage.app",
-            messagingSenderId: "105940641906",
-            appId: "1:105940641906:web:effee678673ae954b53aeb"
-        };
-        
-        // Инициализация Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
-    </script>
+    <!-- Подключаем общий config.js -->
+    <script src="config.js"></script>
 
     <script>
         // Глобальные переменные
@@ -515,6 +539,12 @@
 
             if (!name || !phone) {
                 alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            // Проверка формата телефона
+            if (!phone.match(/^998[0-9]{9}$/)) {
+                alert('Введите номер телефона в формате: 998XXXXXXXXX');
                 return;
             }
 
@@ -656,7 +686,7 @@
             });
         }
 
-        // Показ вопроса
+        // ИСПРАВЛЕНО: Показ вопроса с обработкой длинных текстов
         function showQuestion(index) {
             currentQuestionIndex = index;
             const question = questions[index];
@@ -664,8 +694,8 @@
             // Обновляем счетчик
             document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
             
-            // Обновляем текст вопроса
-            document.getElementById('qText').textContent = question.text;
+            // ИСПРАВЛЕНО: Заменяем переносы строк на <br> для корректного отображения
+            document.getElementById('qText').innerHTML = question.text.replace(/\n/g, '<br>');
             
             // Очищаем и создаем варианты ответов
             const optionsArea = document.getElementById('optionsArea');
@@ -674,7 +704,9 @@
             question.shuffledOptions.forEach((option, optionIndex) => {
                 const button = document.createElement('button');
                 button.className = 'option';
-                button.textContent = option.text;
+                
+                // ИСПРАВЛЕНО: Заменяем переносы строк на <br> для вариантов ответов
+                button.innerHTML = option.text.replace(/\n/g, '<br>');
                 
                 if (isReviewMode) {
                     if (option.isCorrect) {
