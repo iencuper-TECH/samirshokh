@@ -1,1310 +1,1284 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тестовая система - Университет</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg: #f8fafc;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-            animation: slideUp 0.5s ease;
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        
-        .content {
-            padding: 25px;
-        }
-        
-        .form-group {
-            margin-bottom: 18px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            color: #374151;
-            font-weight: 600;
-            font-size: 13px;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-success {
-            background: var(--success);
-        }
-        
-        .btn-success:hover {
-            background: #0da271;
-        }
-        
-        .btn-warning {
-            background: var(--warning);
-        }
-        
-        .btn-warning:hover {
-            background: #d97706;
-        }
-        
-        .btn-danger {
-            background: var(--danger);
-        }
-        
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .timer {
-            background: var(--danger);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        
-        .question-counter {
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 600;
-        }
-        
-        .question-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            padding: 15px;
-            background: #f9fafb;
-        }
-        
-        .grid-item {
-            height: 35px;
-            min-width: 35px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .grid-item:hover {
-            border-color: var(--primary);
-            transform: scale(1.05);
-        }
-        
-        .grid-item.active {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-        }
-        
-        .grid-item.done {
-            background: var(--success);
-            color: white;
-            border-color: var(--success);
-        }
-        
-        .question-content {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 400px;
-        }
-        
-        .question-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .question-text {
-            font-size: 16px;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            color: #1f2937;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-            word-break: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
-            max-height: none;
-            overflow: visible;
-            flex-shrink: 0;
-        }
-        
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 5px;
-            max-height: 350px;
-        }
-        
-        .option {
-            padding: 15px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            text-align: left;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            word-break: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
-            line-height: 1.4;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            text-align: left;
-        }
-        
-        .option:hover {
-            border-color: var(--primary);
-            background: #f5f3ff;
-        }
-        
-        .option.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        
-        .option.correct {
-            background: #d1fae5;
-            border-color: var(--success);
-            color: #065f46;
-        }
-        
-        .option.wrong {
-            background: #fee2e2;
-            border-color: var(--danger);
-            color: #991b1b;
-        }
-        
-        .options-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .options-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-        
-        .options-container::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-        
-        .options-container::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-        }
-        
-        .navigation {
-            display: flex;
-            gap: 10px;
-            padding: 15px;
-            background: #f9fafb;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .navigation .btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 14px;
-        }
-        
-        .result-screen {
-            text-align: center;
-            padding: 30px 20px;
-        }
-        
-        .result-score {
-            font-size: 60px;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 15px 0;
-            line-height: 1;
-        }
-        
-        .result-message {
-            font-size: 16px;
-            color: #6b7280;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-        
-        .result-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .dev-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #9ca3af;
-            font-size: 12px;
-            text-decoration: none;
-        }
-        
-        .dev-link:hover {
-            color: var(--primary);
-        }
-        
-        .report-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: underline;
-            margin-top: 15px;
-            padding: 8px;
-            align-self: flex-start;
-        }
-        
-        .report-btn:hover {
-            color: var(--danger);
-        }
-        
-        .error-message {
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            display: none;
-        }
-        
-        .error-message.show {
-            display: block;
-        }
-        
-        .access-info {
-            font-size: 12px;
-            color: #6b7280;
-            text-align: center;
-            margin-top: 15px;
-            padding: 10px;
-            background: #f9fafb;
-            border-radius: 8px;
-        }
-        
-        @media (max-width: 480px) {
-            .question-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-            
-            .grid-item {
-                height: 32px;
-                min-width: 32px;
-                font-size: 11px;
-            }
-            
-            .question-text {
-                font-size: 15px;
-            }
-            
-            .option {
-                font-size: 13px;
-                min-height: 55px;
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .question-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .grid-item {
-                height: 30px;
-                min-width: 30px;
-                font-size: 10px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тестовая система - Университет</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+--primary: #4f46e5;
+--success: #10b981;
+--danger: #ef4444;
+--warning: #f59e0b;
+--bg: #f8fafc;
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+min-height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 15px;
+}
+
+.container {
+width: 100%;
+max-width: 500px;
+}
+
+.card {
+background: white;
+border-radius: 20px;
+box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+overflow: hidden;
+animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+from { transform: translateY(30px); opacity: 0; }
+to { transform: translateY(0); opacity: 1; }
+}
+
+.header {
+background: var(--primary);
+color: white;
+padding: 25px;
+text-align: center;
+}
+
+.header h1 {
+font-size: 24px;
+margin-bottom: 8px;
+}
+
+.header p {
+opacity: 0.9;
+font-size: 14px;
+}
+
+.content {
+padding: 25px;
+}
+
+.form-group {
+margin-bottom: 18px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 6px;
+color: #374151;
+font-weight: 600;
+font-size: 13px;
+}
+
+.form-control {
+width: 100%;
+padding: 12px 14px;
+border: 2px solid #e5e7eb;
+border-radius: 10px;
+font-size: 15px;
+transition: all 0.3s;
+}
+
+.form-control:focus {
+outline: none;
+border-color: var(--primary);
+box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.btn {
+width: 100%;
+padding: 14px;
+background: var(--primary);
+color: white;
+border: none;
+border-radius: 10px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s;
+display: flex;
+justify-content: center;
+align-items: center;
+gap: 8px;
+}
+
+.btn:hover {
+background: #4338ca;
+transform: translateY(-2px);
+box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+}
+
+.btn:active {
+transform: translateY(0);
+}
+
+.btn-success {
+background: var(--success);
+}
+
+.btn-success:hover {
+background: #0da271;
+}
+
+.btn-warning {
+background: var(--warning);
+}
+
+.btn-warning:hover {
+background: #d97706;
+}
+
+.btn-danger {
+background: var(--danger);
+}
+
+.btn-danger:hover {
+background: #dc2626;
+}
+
+.hidden {
+display: none !important;
+}
+
+.quiz-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 15px;
+background: #f9fafb;
+border-bottom: 1px solid #e5e7eb;
+}
+
+.timer {
+background: var(--danger);
+color: white;
+padding: 6px 12px;
+border-radius: 15px;
+font-weight: bold;
+font-size: 14px;
+white-space: nowrap;
+}
+
+.question-counter {
+font-size: 14px;
+color: #6b7280;
+font-weight: 600;
+}
+
+.question-grid {
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 6px;
+padding: 15px;
+background: #f9fafb;
+}
+
+.grid-item {
+height: 35px;
+min-width: 35px;
+background: white;
+border: 2px solid #e5e7eb;
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: 600;
+font-size: 12px;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.grid-item:hover {
+border-color: var(--primary);
+transform: scale(1.05);
+}
+
+.grid-item.active {
+border-color: var(--primary);
+background: var(--primary);
+color: white;
+}
+
+.grid-item.done {
+background: var(--success);
+color: white;
+border-color: var(--success);
+}
+
+.question-content {
+padding: 20px;
+display: flex;
+flex-direction: column;
+min-height: 400px;
+}
+
+.question-container {
+flex: 1;
+display: flex;
+flex-direction: column;
+}
+
+.question-text {
+font-size: 16px;
+line-height: 1.5;
+margin-bottom: 20px;
+color: #1f2937;
+background: #f8fafc;
+padding: 15px;
+border-radius: 10px;
+border-left: 4px solid var(--primary);
+word-break: break-word;
+overflow-wrap: break-word;
+white-space: normal;
+max-height: none;
+overflow: visible;
+flex-shrink: 0;
+}
+
+.options-container {
+display: flex;
+flex-direction: column;
+gap: 10px;
+flex: 1;
+overflow-y: auto;
+padding-right: 5px;
+max-height: 350px;
+}
+
+.option {
+padding: 15px;
+background: white;
+border: 2px solid #e5e7eb;
+border-radius: 10px;
+text-align: left;
+font-size: 14px;
+cursor: pointer;
+transition: all 0.2s;
+word-break: break-word;
+overflow-wrap: break-word;
+white-space: normal;
+line-height: 1.4;
+min-height: 60px;
+display: flex;
+align-items: center;
+text-align: left;
+}
+
+.option:hover {
+border-color: var(--primary);
+background: #f5f3ff;
+}
+
+.option.selected {
+background: var(--primary);
+color: white;
+border-color: var(--primary);
+}
+
+.option.correct {
+background: #d1fae5;
+border-color: var(--success);
+color: #065f46;
+}
+
+.option.wrong {
+background: #fee2e2;
+border-color: var(--danger);
+color: #991b1b;
+}
+
+.options-container::-webkit-scrollbar {
+width: 6px;
+}
+
+.options-container::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 3px;
+}
+
+.options-container::-webkit-scrollbar-thumb {
+background: #c1c1c1;
+border-radius: 3px;
+}
+
+.options-container::-webkit-scrollbar-thumb:hover {
+background: #a1a1a1;
+}
+
+.navigation {
+display: flex;
+gap: 10px;
+padding: 15px;
+background: #f9fafb;
+border-top: 1px solid #e5e7eb;
+}
+
+.navigation .btn {
+flex: 1;
+padding: 12px;
+font-size: 14px;
+}
+
+.result-screen {
+text-align: center;
+padding: 30px 20px;
+}
+
+.result-score {
+font-size: 60px;
+font-weight: 800;
+color: var(--primary);
+margin: 15px 0;
+line-height: 1;
+}
+
+.result-message {
+font-size: 16px;
+color: #6b7280;
+margin-bottom: 25px;
+line-height: 1.5;
+}
+
+.result-actions {
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.dev-link {
+display: block;
+text-align: center;
+margin-top: 20px;
+color: #9ca3af;
+font-size: 12px;
+text-decoration: none;
+}
+
+.dev-link:hover {
+color: var(--primary);
+}
+
+.report-btn {
+background: none;
+border: none;
+color: #94a3b8;
+font-size: 12px;
+cursor: pointer;
+text-decoration: underline;
+margin-top: 15px;
+padding: 8px;
+align-self: flex-start;
+}
+
+.report-btn:hover {
+color: var(--danger);
+}
+
+.error-message {
+background: #fee2e2;
+border: 1px solid #fecaca;
+color: #991b1b;
+padding: 12px;
+border-radius: 8px;
+margin-bottom: 15px;
+font-size: 14px;
+display: none;
+}
+
+.error-message.show {
+display: block;
+}
+
+.access-info {
+font-size: 12px;
+color: #6b7280;
+text-align: center;
+margin-top: 15px;
+padding: 10px;
+background: #f9fafb;
+border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+.question-grid {
+grid-template-columns: repeat(5, 1fr);
+}
+
+.grid-item {
+height: 32px;
+min-width: 32px;
+font-size: 11px;
+}
+
+.question-text {
+font-size: 15px;
+}
+
+.option {
+font-size: 13px;
+min-height: 55px;
+}
+}
+
+@media (max-width: 360px) {
+.question-grid {
+grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-item {
+height: 30px;
+min-width: 30px;
+font-size: 10px;
+}
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Экран входа -->
-        <div id="loginScreen" class="card">
-            <div class="header">
-                <h1>📚 Тестовая система</h1>
-                <p>Доступ по индивидуальному логину</p>
-            </div>
-            <div class="content">
-                <div id="loginError" class="error-message"></div>
-                
-                <div class="form-group">
-                    <label for="loginInput"><i class="fas fa-key"></i> Логин для входа</label>
-                    <input type="text" id="loginInput" class="form-control" 
-                           placeholder="Введите ваш логин" 
-                           autocomplete="off"
-                           autocapitalize="off"
-                           spellcheck="false">
-                </div>
-                
-                <div class="form-group">
-                    <label for="nameInput"><i class="fas fa-user"></i> Ваше имя</label>
-                    <input type="text" id="nameInput" class="form-control" 
-                           placeholder="Иванов Иван"
-                           autocomplete="off">
-                </div>
-                
-                <div class="form-group">
-                    <label for="subjectSelect"><i class="fas fa-book"></i> Предмет тестирования</label>
-                    <select id="subjectSelect" class="form-control">
-                        <option value="">-- Выберите предмет --</option>
-                        <option value="anatomy">Анатомия</option>
-                        <option value="biology">Биология</option>
-                        <option value="chemistry">Химия</option>
-                        <option value="physics">Физика</option>
-                        <option value="history">История</option>
-                        <option value="english">Английский язык</option>
-                        <option value="latin">Латинский язык</option>
-                        <option value="medical">Медицинская профессия</option>
-                        <option value="uzbek">Узбекский язык</option>
-                        <option value="histology">Гистология</option>
-                        <option value="philosophy">Философия</option>
-                    </select>
-                </div>
-                
-                <button class="btn" onclick="tryLogin(event)">
-                    <i class="fas fa-sign-in-alt"></i> Войти и начать тест
-                </button>
-                
-                <div class="access-info">
-                    <i class="fas fa-info-circle"></i> 
-                    Доступ только для авторизованных пользователей. 
-                    Логин предоставляет администратор.
-                </div>
-                
-                <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">
-                    <i class="fas fa-question-circle"></i> Техническая поддержка
-                </a>
-            </div>
-        </div>
+<div class="container">
+<div id="loginScreen" class="card">
+<div class="header">
+<h1> 📚  Тестовая система</h1>
+<p>Доступ по индивидуальному логину</p>
+</div>
+<div class="content">
+<div id="loginError" class="error-message"></div>
 
-        <!-- Экран блокировки -->
-        <div id="blockedScreen" class="card hidden">
-            <div class="header" style="background: var(--danger);">
-                <h1>⛔ Доступ ограничен</h1>
-                <p>Обнаружена попытка входа с другого устройства</p>
-            </div>
-            <div class="content">
-                <div style="text-align: center; padding: 30px 0;">
-                    <i class="fas fa-lock" style="font-size: 60px; color: var(--danger); margin-bottom: 20px;"></i>
-                    <h3 style="margin-bottom: 15px; color: var(--danger);">Доступ уже активен на другом устройстве</h3>
-                    <p style="margin-bottom: 20px; color: #6b7280;">
-                        Вы не можете войти с этого устройства, так как ваш аккаунт уже используется.
-                    </p>
-                    <p style="margin-bottom: 30px; color: #6b7280;">
-                        Если это ошибка, обратитесь к администратору для сброса доступа.
-                    </p>
-                    
-                    <button class="btn" onclick="location.reload()">
-                        <i class="fas fa-redo"></i> Попробовать снова
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="form-group">
+<label for="loginInput"><i class="fas fa-key"></i> Логин для входа</label>
+<input type="text" id="loginInput" class="form-control"
+placeholder="Введите ваш логин"
+autocomplete="off"
+autocapitalize="off"
+spellcheck="false">
+</div>
 
-        <!-- Экран теста -->
-        <div id="quizScreen" class="card hidden">
-            <div class="quiz-header">
-                <div class="timer" id="timer">30:00</div>
-                <div class="question-counter" id="qCounter">1 / 30</div>
-            </div>
-            
-            <div class="question-grid" id="qGrid"></div>
-            
-            <div class="question-content">
-                <div class="question-container">
-                    <div class="question-text" id="qText"></div>
-                    <div class="options-container" id="optionsArea"></div>
-                </div>
-                
-                <button id="reportBtn" class="report-btn" onclick="reportError()">
-                    <i class="fas fa-exclamation-triangle"></i> Сообщить об ошибке
-                </button>
-            </div>
-            
-            <div class="navigation">
-                <button class="btn" style="background: #9ca3af;" onclick="prevQuestion()">
-                    <i class="fas fa-arrow-left"></i> Назад
-                </button>
-                <button class="btn" onclick="nextQuestion()">
-                    Дальше <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-            
-            <button id="finishBtn" class="btn btn-success" style="margin: 15px; border-radius: 10px;" onclick="finishTest()">
-                <i class="fas fa-flag-checkered"></i> Завершить тест
-            </button>
-        </div>
+<div class="form-group">
+<label for="nameInput"><i class="fas fa-user"></i> Ваше имя</label>
+<input type="text" id="nameInput" class="form-control"
+placeholder="Иванов Иван"
+autocomplete="off">
+</div>
 
-        <!-- Экран результатов -->
-        <div id="resultScreen" class="card hidden">
-            <div class="header">
-                <h1>🎉 Результаты теста</h1>
-                <p>Тестирование завершено</p>
-            </div>
-            
-            <div class="result-screen">
-                <div class="result-score" id="scoreDisplay">0</div>
-                <div class="result-message" id="resultMessage"></div>
-                
-                <div class="result-actions">
-                    <button class="btn" onclick="reviewMode()">
-                        <i class="fas fa-chart-bar"></i> Анализ ошибок
-                    </button>
-                    
-                    <button class="btn btn-success" onclick="retrySameTest()">
-                        <i class="fas fa-redo"></i> Пересдать этот вариант
-                    </button>
-                    
-                    <button class="btn btn-warning" onclick="newTestSameSubject()">
-                        <i class="fas fa-plus-circle"></i> Новый тест по предмету
-                    </button>
-                    
-                    <button class="btn btn-danger" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Завершить сеанс
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="form-group">
+<label for="subjectSelect"><i class="fas fa-book"></i> Предмет тестирования</label>
+<select id="subjectSelect" class="form-control">
+<option value="">-- Выберите предмет --</option>
+<option value="anatomy">Анатомия</option>
+<option value="biology">Биология</option>
+<option value="chemistry">Химия</option>
+<option value="physics">Физика</option>
+<option value="history">История</option>
+<option value="english">Английский язык</option>
+<option value="latin">Латинский язык</option>
+<option value="medical">Медицинская профессия</option>
+<option value="uzbek">Узбекский язык</option>
+<option value="histology">Гистология</option>
+<option value="philosophy">Философия</option>
+</select>
+</div>
 
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
-    <!-- Конфигурация Firebase -->
-    <script>
-        // ЗАМЕНИТЕ ЭТИ ДАННЫЕ НА ВАШИ РЕАЛЬНЫЕ ДАННЫЕ ИЗ FIREBASE
-        window.firebaseConfig = {
-            apiKey: "AIzaSyABC123...", // Ваш API Key
-            authDomain: "your-project.firebaseapp.com",
-            projectId: "your-project-id",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
-        };
-    </script>
+<button class="btn" onclick="tryLogin(event)">
+<i class="fas fa-sign-in-alt"></i> Войти и начать тест
+</button>
 
-    <script>
-        // Глобальные переменные
-        let questions = [];
-        let answers = {};
-        let currentQuestionIndex = 0;
-        let timeLeft = 30 * 60;
-        let timerInterval;
-        let currentUser = {};
-        let isReviewMode = false;
-        let currentTestId = null;
-        let db = null;
-        let currentSessionId = null;
-        let deviceId = null;
+<div class="access-info">
+<i class="fas fa-info-circle"></i>
+Доступ только для авторизованных пользователей.
+Логин предоставляет администратор.
+</div>
 
-        // Инициализация Firebase
-        function initFirebase() {
-            if (typeof firebase !== 'undefined' && window.firebaseConfig) {
-                try {
-                    firebase.initializeApp(window.firebaseConfig);
-                    db = firebase.firestore();
-                    console.log('Firebase успешно инициализирован');
-                    return true;
-                } catch (error) {
-                    console.error('Ошибка инициализации Firebase:', error);
-                    return false;
-                }
-            }
-            return false;
-        }
+<a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">
+<i class="fas fa-question-circle"></i> Техническая поддержка
+</a>
+</div>
+</div>
+<div id="blockedScreen" class="card hidden">
+<div class="header" style="background: var(--danger);">
+<h1> ⛔   Доступ   ограничен </h1>
+<p>Обнаружена попытка входа с другого устройства</p>
+</div>
+<div class="content">
+<div style="text-align: center; padding: 30px 0;">
+<i class="fas fa-lock" style="font-size: 60px; color: var(--danger); margin-bottom: 20px;"></i>
+<h3 style="margin-bottom: 15px; color: var(--danger);">Доступ уже активен на другом устройстве</h3>
+<p style="margin-bottom: 20px; color: #6b7280;">
+Вы не можете войти с этого устройства, так как ваш аккаунт уже используется.
+</p>
+<p style="margin-bottom: 30px; color: #6b7280;">
+Если это ошибка, обратитесь к администратору для сброса доступа.
+</p>
 
-        // Генерация уникального ID устройства
-        function generateDeviceId() {
-            const sources = [
-                navigator.userAgent,
-                navigator.platform,
-                new Date().getTime(),
-                Math.random().toString(36).substr(2, 9)
-            ];
-            
-            let hash = '';
-            sources.forEach(source => {
-                for(let i = 0; i < source.length; i++) {
-                    hash += source.charCodeAt(i).toString(36);
-                }
-            });
-            
-            return 'dev_' + hash.substr(0, 20);
-        }
+<button class="btn" onclick="location.reload()">
+<i class="fas fa-redo"></i> Попробовать снова
+</button>
+</div>
+</div>
+</div>
+<div id="quizScreen" class="card hidden">
+<div class="quiz-header">
+<div class="timer" id="timer">30:00</div>
+<div class="question-counter" id="qCounter">1 / 30</div>
+</div>
 
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            deviceId = localStorage.getItem('device_id') || generateDeviceId();
-            localStorage.setItem('device_id', deviceId);
-            
-            console.log('Device ID:', deviceId);
-            
-            if (!initFirebase()) {
-                showLoginError('Режим оффлайн. Некоторые функции могут быть недоступны.');
-            }
-            
-            checkActiveSession();
-        });
+<div class="question-grid" id="qGrid"></div>
 
-        // Проверка активной сессии
-        function checkActiveSession() {
-            const activeSession = localStorage.getItem('active_session');
-            if (activeSession) {
-                try {
-                    const session = JSON.parse(activeSession);
-                    const sessionTime = session.timestamp;
-                    const currentTime = new Date().getTime();
-                    const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
-                    
-                    if (hoursDiff < 12) {
-                        currentUser = session.user;
-                        currentTestId = session.testId;
-                        
-                        const savedQuestions = localStorage.getItem(`test_${session.user.login}_${session.user.subject}`);
-                        if (savedQuestions) {
-                            try {
-                                const parsed = JSON.parse(savedQuestions);
-                                questions = parsed.questions || [];
-                                answers = parsed.answers || {};
-                                
-                                document.getElementById('loginScreen').classList.add('hidden');
-                                document.getElementById('quizScreen').classList.remove('hidden');
-                                renderQuestionGrid();
-                                showQuestion(0);
-                                startTimer();
-                                console.log('Восстановлена активная сессия');
-                                return;
-                            } catch(e) {
-                                console.error('Ошибка восстановления сессии:', e);
-                            }
-                        }
-                    }
-                } catch(e) {
-                    console.error('Ошибка проверки сессии:', e);
-                }
-            }
-            
-            clearExpiredSessions();
-        }
+<div class="question-content">
+<div class="question-container">
+<div class="question-text" id="qText"></div>
+<div class="options-container" id="optionsArea"></div>
+</div>
 
-        // Очистка просроченных сессий
-        function clearExpiredSessions() {
-            localStorage.removeItem('active_session');
-        }
+<button id="reportBtn" class="report-btn" onclick="reportError()">
+<i class="fas fa-exclamation-triangle"></i> Сообщить об ошибке
+</button>
+</div>
 
-        // Показать ошибку входа
-        function showLoginError(message) {
-            const errorDiv = document.getElementById('loginError');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
-            
-            setTimeout(() => {
-                errorDiv.classList.remove('show');
-            }, 5000);
-        }
+<div class="navigation">
+<button class="btn" style="background: #9ca3af;" onclick="prevQuestion()">
+<i class="fas fa-arrow-left"></i> Назад
+</button>
+<button class="btn" onclick="nextQuestion()">
+Дальше <i class="fas fa-arrow-right"></i>
+</button>
+</div>
 
-        // Проверка логина в базе данных
-        async function checkLoginAccess(login) {
-            if (!db) {
-                // Оффлайн режим - демо доступ
-                const demoLogins = ['student123', 'user123', 'testuser'];
-                if (demoLogins.includes(login)) {
-                    return { allowed: true, userData: { approved: true } };
-                }
-                return { allowed: false, reason: 'Логин не найден' };
-            }
-            
-            try {
-                // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем в коллекции "allowed_users"
-                const userDoc = await db.collection("allowed_users").doc(login).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    
-                    if (!userData.approved) {
-                        return { allowed: false, reason: 'Доступ не разрешен администратором' };
-                    }
-                    
-                    if (userData.activeSession && userData.activeSession !== deviceId) {
-                        const sessionTime = userData.sessionTimestamp || 0;
-                        const currentTime = new Date().getTime();
-                        const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
-                        
-                        if (hoursDiff < 12) {
-                            return { 
-                                allowed: false, 
-                                reason: 'Уже используется на другом устройстве',
-                                userData: userData 
-                            };
-                        }
-                    }
-                    
-                    return { 
-                        allowed: true, 
-                        userData: userData 
-                    };
-                }
-                
-                return { allowed: false, reason: 'Логин не найден' };
-            } catch (error) {
-                console.error('Ошибка проверки логина:', error);
-                return { allowed: false, reason: 'Ошибка соединения' };
-            }
-        }
+<button id="finishBtn" class="btn btn-success" style="margin: 15px; border-radius: 10px;" onclick="finishTest()">
+<i class="fas fa-flag-checkered"></i> Завершить тест
+</button>
+</div>
+<div id="resultScreen" class="card hidden">
+<div class="header">
+<h1> 🎉  Результаты теста</h1>
+<p>Тестирование завершено</p>
+</div>
 
-        // Обновление информации о сессии
-        async function updateSessionInfo(login, startSession = true) {
-            if (!db) return;
-            
-            try {
-                const updateData = {
-                    lastLogin: new Date(),
-                    lastDevice: deviceId
-                };
-                
-                if (startSession) {
-                    updateData.activeSession = deviceId;
-                    updateData.sessionTimestamp = new Date().getTime();
-                } else {
-                    updateData.activeSession = null;
-                    updateData.sessionTimestamp = null;
-                }
-                
-                // ИСПРАВЛЕНО: Используем коллекцию "allowed_users"
-                await db.collection("allowed_users").doc(login).update(updateData);
-                return true;
-            } catch (error) {
-                console.error('Ошибка обновления сессии:', error);
-                return false;
-            }
-        }
+<div class="result-screen">
+<div class="result-score" id="scoreDisplay">0</div>
+<div class="result-message" id="resultMessage"></div>
 
-        // Функция входа
-        async function tryLogin(event) {
-            event.preventDefault();
-            console.log("🟢 ПОПЫТКА ВХОДА");
-            
-            const login = document.getElementById('loginInput').value.trim();
-            const name = document.getElementById('nameInput').value.trim();
-            const subject = document.getElementById('subjectSelect').value;
-            const btn = event.currentTarget;
-            
-            if (!login || login.length < 3) {
-                showLoginError('Логин должен содержать минимум 3 символа');
-                return;
-            }
-            
-            if (!name) {
-                showLoginError('Введите ваше имя');
-                return;
-            }
-            
-            if (!subject) {
-                showLoginError('Выберите предмет для тестирования');
-                return;
-            }
-            
-            btn.disabled = true;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
-            
-            try {
-                const accessCheck = await checkLoginAccess(login);
-                
-                if (!accessCheck.allowed) {
-                    if (accessCheck.reason === 'Уже используется на другом устройстве') {
-                        document.getElementById('loginScreen').classList.add('hidden');
-                        document.getElementById('blockedScreen').classList.remove('hidden');
-                    } else {
-                        showLoginError(`Доступ запрещен: ${accessCheck.reason || 'логин не найден'}`);
-                    }
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    return;
-                }
-                
-                await updateSessionInfo(login, true);
-                
-                currentUser = { 
-                    login: login, 
-                    name: name, 
-                    subject: subject,
-                    deviceId: deviceId
-                };
-                
-                currentTestId = Date.now().toString(36);
-                currentSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
-                
-                localStorage.setItem('active_session', JSON.stringify({
-                    user: currentUser,
-                    testId: currentTestId,
-                    sessionId: currentSessionId,
-                    timestamp: new Date().getTime()
-                }));
-                
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('quizScreen').classList.remove('hidden');
-                
-                await loadQuestions();
-                renderQuestionGrid();
-                showQuestion(0);
-                startTimer();
-                
-                console.log("🟢 ТЕСТ ЗАПУЩЕН для пользователя:", login);
-                
-            } catch (error) {
-                console.error('Ошибка при входе:', error);
-                showLoginError('Ошибка при входе. Попробуйте еще раз.');
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        }
+<div class="result-actions">
+<button class="btn" onclick="reviewMode()">
+<i class="fas fa-chart-bar"></i> Анализ ошибок
+</button>
 
-        // Загрузка вопросов - ИСПРАВЛЕННАЯ ВЕРСИЯ
-        async function loadQuestions() {
-            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-            const savedTest = localStorage.getItem(storageKey);
-            
-            // ИСПРАВЛЕНИЕ: Если сохраненный тест есть, используем его
-            if (savedTest) {
-                try {
-                    const parsed = JSON.parse(savedTest);
-                    const savedTime = parsed.timestamp;
-                    const currentTime = new Date().getTime();
-                    const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
-                    
-                    if (hoursDiff < 24 && parsed.questions && parsed.questions.length >= 5) {
-                        questions = parsed.questions;
-                        currentTestId = parsed.testId || currentTestId;
-                        console.log('Используем сохраненный тест из localStorage');
-                        return;
-                    }
-                } catch(e) {
-                    console.log('Ошибка чтения сохраненного теста:', e);
-                }
-            }
-            
-            // Генерируем новые вопросы
-            generateQuestionsForSubject();
-            console.log('Сгенерирован новый тест');
-        }
+<button class="btn btn-success" onclick="retrySameTest()">
+<i class="fas fa-redo"></i> Пересдать этот вариант
+</button>
 
-        // Генерация вопросов по предмету
-        function generateQuestionsForSubject() {
-            questions = [];
-            
-            // ИСПРАВЛЕНИЕ: Создаем 30 вопросов для сетки
-            for (let i = 0; i < 30; i++) {
-                let question;
-                
-                if (currentUser.subject === 'physics') {
-                    // Вопросы по физике
-                    const physicsQuestions = [
-                        {
-                            text: "Второй закон Ньютона формулируется как:",
-                            shuffledOptions: [
-                                { text: "Сила равна произведению массы на ускорение", isCorrect: true },
-                                { text: "Действию всегда есть равное и противоположное противодействие", isCorrect: false },
-                                { text: "Тело сохраняет состояние покоя или равномерного прямолинейного движения", isCorrect: false },
-                                { text: "Энергия не создается и не уничтожается", isCorrect: false }
-                            ],
-                            correctIndex: 0
-                        },
-                        {
-                            text: "Что такое инерция?",
-                            shuffledOptions: [
-                                { text: "Свойство тел сохранять состояние покоя или равномерного движения", isCorrect: true },
-                                { text: "Сила притяжения между телами", isCorrect: false },
-                                { text: "Способность тел совершать работу", isCorrect: false },
-                                { text: "Изменение скорости тела", isCorrect: false }
-                            ],
-                            correctIndex: 0
-                        },
-                        {
-                            text: "Единица измерения силы в системе СИ:",
-                            shuffledOptions: [
-                                { text: "Ньютон (Н)", isCorrect: true },
-                                { text: "Джоуль (Дж)", isCorrect: false },
-                                { text: "Ватт (Вт)", isCorrect: false },
-                                { text: "Паскаль (Па)", isCorrect: false }
-                            ],
-                            correctIndex: 0
-                        },
-                        {
-                            text: "Закон сохранения энергии утверждает, что:",
-                            shuffledOptions: [
-                                { text: "Энергия не создается и не уничтожается, а только превращается", isCorrect: true },
-                                { text: "Энергия постоянно создается", isCorrect: false },
-                                { text: "Энергия теряется при каждом превращении", isCorrect: false },
-                                { text: "Энергия зависит от массы тела", isCorrect: false }
-                            ],
-                            correctIndex: 0
-                        }
-                    ];
-                    
-                    question = physicsQuestions[i % physicsQuestions.length];
-                    
-                } else if (currentUser.subject === 'biology') {
-                    // Вопросы по биологии
-                    const biologyQuestions = [
-                        {
-                            text: "Основная структурная и функциональная единица живого организма:",
-                            shuffledOptions: [
-                                { text: "Клетка", isCorrect: true },
-                                { text: "Ткань", isCorrect: false },
-                                { text: "Орган", isCorrect: false },
-                                { text: "Молекула", isCorrect: false }
-                            ],
-                            correctIndex: 0
-                        },
-                        {
-                            text: "Процесс фотосинтеза происходит в:",
-                            shuffledOptions: [
-                                { text: "Хлоропластах", isCorrect: true },
-                                { text: "Митохондриях", isCorrect: false },
-                                { text: "Ядре", isCorrect: false },
-                                { text: "Рибосомах", isCorrect: false }
-                            ],
-                            correctIndex: 0
-                        }
-                    ];
-                    
-                    question = biologyQuestions[i % biologyQuestions.length];
-                    
-                } else {
-                    // Общие вопросы для других предметов
-                    question = {
-                        text: `Вопрос ${i + 1} по предмету ${currentUser.subject}: Какое утверждение верно?`,
-                        shuffledOptions: [
-                            { text: "Правильный ответ", isCorrect: true },
-                            { text: "Неправильный вариант 1", isCorrect: false },
-                            { text: "Неправильный вариант 2", isCorrect: false },
-                            { text: "Неправильный вариант 3", isCorrect: false }
-                        ],
-                        correctIndex: 0
-                    };
-                }
-                
-                // Перемешиваем варианты ответов
-                question.shuffledOptions = [...question.shuffledOptions].sort(() => Math.random() - 0.5);
-                
-                // Находим индекс правильного ответа после перемешивания
-                const correctOptionText = question.shuffledOptions.find(opt => opt.isCorrect).text;
-                question.correctIndex = question.shuffledOptions.findIndex(opt => opt.text === correctOptionText);
-                
-                questions.push(question);
-            }
-            
-            // Сохраняем сгенерированные вопросы
-            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-            localStorage.setItem(storageKey, JSON.stringify({
-                questions: questions,
-                answers: answers,
-                testId: currentTestId,
-                timestamp: new Date().getTime(),
-                subject: currentUser.subject
-            }));
-        }
+<button class="btn btn-warning" onclick="newTestSameSubject()">
+<i class="fas fa-plus-circle"></i> Новый тест по предмету
+</button>
 
-        // Рендеринг сетки вопросов
-        function renderQuestionGrid() {
-            const grid = document.getElementById('qGrid');
-            grid.innerHTML = '';
-            
-            for (let i = 0; i < 30; i++) {
-                const item = document.createElement('div');
-                item.className = 'grid-item';
-                item.textContent = i + 1;
-                item.onclick = () => showQuestion(i);
-                
-                if (i < questions.length) {
-                    if (answers[i] !== undefined) {
-                        item.classList.add('done');
-                    }
-                } else {
-                    item.style.opacity = '0.5';
-                    item.style.cursor = 'not-allowed';
-                }
-                
-                grid.appendChild(item);
-            }
-        }
+<button class="btn btn-danger" onclick="logout()">
+<i class="fas fa-sign-out-alt"></i> Завершить сеанс
+</button>
+</div>
+</div>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-        // Показать вопрос
-        function showQuestion(index) {
-            if (index < 0 || index >= questions.length) return;
-            
-            currentQuestionIndex = index;
-            const question = questions[index];
-            
-            document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
-            document.getElementById('qText').textContent = question.text;
-            
-            const optionsArea = document.getElementById('optionsArea');
-            optionsArea.innerHTML = '';
-            
-            question.shuffledOptions.forEach((option, optionIndex) => {
-                const button = document.createElement('button');
-                button.className = 'option';
-                button.textContent = option.text;
-                
-                if (isReviewMode) {
-                    if (option.isCorrect) {
-                        button.classList.add('correct');
-                    }
-                    if (answers[index] === optionIndex && !option.isCorrect) {
-                        button.classList.add('wrong');
-                    }
-                } else {
-                    if (answers[index] === optionIndex) {
-                        button.classList.add('selected');
-                    }
-                    button.onclick = () => selectAnswer(optionIndex);
-                }
-                
-                optionsArea.appendChild(button);
-            });
-            
-            // Обновляем сетку
-            document.querySelectorAll('.grid-item').forEach((item, i) => {
-                item.classList.remove('active');
-                item.classList.toggle('done', answers[i] !== undefined);
-                
-                if (i === index) {
-                    item.classList.add('active');
-                }
-            });
-        }
+<script>
+window.firebaseConfig = {
+apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
+authDomain: "test-by-samirshokh.firebaseapp.com",
+projectId: "test-by-samirshokh",
+storageBucket: "test-by-samirshokh.firebasestorage.app",
+messagingSenderId: "105940641906",
+appId: "1:105940641906:web:effee678673ae954b53aeb"
+};
+</script>
+<script>
+// Глобальные переменные
+let questions = [];
+let answers = {};
+let currentQuestionIndex = 0;
+let timeLeft = 30 * 60;
+let timerInterval;
+let currentUser = {};
+let isReviewMode = false;
+let currentTestId = null;
+let db = null;
+let currentSessionId = null;
+let deviceId = null;
+// Инициализация Firebase
+function initFirebase() {
+if (typeof firebase !== 'undefined' && window.firebaseConfig) {
+try {
+firebase.initializeApp(window.firebaseConfig);
+db = firebase.firestore();
+console.log('Firebase успешно инициализирован');
+return true;
+} catch (error) {
+console.error('Ошибка инициализации Firebase:', error);
+return false;
+}
+}
+return false;
+}
+// Генерация уникального ID устройства
+function generateDeviceId() {
+const sources = [
+navigator.userAgent,
+navigator.platform,
+new Date().getTime(),
+Math.random().toString(36).substr(2, 9)
+];
 
-        // Выбор ответа
-        function selectAnswer(optionIndex) {
-            if (isReviewMode) return;
-            
-            answers[currentQuestionIndex] = optionIndex;
-            
-            // Обновляем сетку
-            const gridItem = document.querySelector(`.grid-item:nth-child(${currentQuestionIndex + 1})`);
-            if (gridItem) {
-                gridItem.classList.add('done');
-            }
-            
-            // Автоматический переход к следующему вопросу через 0.5 секунды
-            setTimeout(() => {
-                if (currentQuestionIndex < questions.length - 1) {
-                    showQuestion(currentQuestionIndex + 1);
-                }
-            }, 500);
-        }
+let hash = '';
+sources.forEach(source => {
+for(let i = 0; i < source.length; i++) {
+hash += source.charCodeAt(i).toString(36);
+}
+});
 
-        // Следующий вопрос
-        function nextQuestion() {
-            if (currentQuestionIndex < questions.length - 1) {
-                showQuestion(currentQuestionIndex + 1);
-            } else {
-                alert('Это последний вопрос!');
-            }
-        }
+return 'dev_' + hash.substr(0, 20);
+}
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+deviceId = localStorage.getItem('device_id') || generateDeviceId();
+localStorage.setItem('device_id', deviceId);
 
-        // Предыдущий вопрос
-        function prevQuestion() {
-            if (currentQuestionIndex > 0) {
-                showQuestion(currentQuestionIndex - 1);
-            }
-        }
+console.log('Device ID:', deviceId);
 
-        // Таймер
-        function startTimer() {
-            clearInterval(timerInterval);
-            timeLeft = 30 * 60;
-            
-            updateTimerDisplay();
-            
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    finishTest();
-                }
-            }, 1000);
-        }
+if (!initFirebase()) {
+showLoginError('Режим оффлайн. Некоторые функции могут быть недоступны.');
+}
 
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            document.getElementById('timer').textContent = 
-                `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        }
+checkActiveSession();
+});
+// Проверка активной сессии
+function checkActiveSession() {
+const activeSession = localStorage.getItem('active_session');
+if (activeSession) {
+try {
+const session = JSON.parse(activeSession);
+const sessionTime = session.timestamp;
+const currentTime = new Date().getTime();
+const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
 
-        // Завершение теста
-        async function finishTest() {
-            clearInterval(timerInterval);
-            
-            let correctCount = 0;
-            questions.forEach((question, index) => {
-                if (answers[index] !== undefined) {
-                    if (question.shuffledOptions[answers[index]].isCorrect) {
-                        correctCount++;
-                    }
-                }
-            });
-            
-            await saveTestResults(correctCount);
-            showResults(correctCount);
-        }
+if (hoursDiff < 12) {
+currentUser = session.user;
+currentTestId = session.testId;
 
-        // Сохранение результатов
-        async function saveTestResults(score) {
-            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-            const testData = {
-                questions: questions,
-                answers: answers,
-                score: score,
-                testId: currentTestId,
-                timestamp: new Date().getTime(),
-                subject: currentUser.subject
-            };
-            
-            localStorage.setItem(storageKey, JSON.stringify(testData));
-            
-            if (db && currentUser.login) {
-                try {
-                    await db.collection("test_results").add({
-                        studentLogin: currentUser.login,
-                        studentName: currentUser.name,
-                        subject: currentUser.subject,
-                        score: score,
-                        total: questions.length,
-                        percentage: Math.round((score / questions.length) * 100),
-                        testId: currentTestId,
-                        deviceId: deviceId,
-                        date: new Date(),
-                        answers: answers,
-                        timeSpent: (30 * 60) - timeLeft
-                    });
-                    console.log('Результаты сохранены в Firebase');
-                } catch (error) {
-                    console.error('Ошибка сохранения результатов:', error);
-                }
-            }
-        }
+const savedQuestions = localStorage.getItem(`test_${session.user.login}_${session.user.subject}`);
+if (savedQuestions) {
+try {
+const parsed = JSON.parse(savedQuestions);
+questions = parsed.questions || [];
+answers = parsed.answers || {};
 
-        // Показать результаты
-        function showResults(score) {
-            document.getElementById('quizScreen').classList.add('hidden');
-            document.getElementById('resultScreen').classList.remove('hidden');
-            
-            const percentage = Math.round((score / questions.length) * 100);
-            document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
-            
-            let message = '';
-            if (percentage >= 90) {
-                message = 'Отлично! Вы показали прекрасный результат!';
-            } else if (percentage >= 70) {
-                message = 'Хорошо! Вы хорошо справились с тестом.';
-            } else if (percentage >= 50) {
-                message = 'Удовлетворительно. Есть над чем поработать.';
-            } else {
-                message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
-            }
-            
-            document.getElementById('resultMessage').innerHTML = `
-                ${message}<br><br>
-                <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
-                Ваш результат сохранен.
-            `;
-        }
+document.getElementById('loginScreen').classList.add('hidden');
+document.getElementById('quizScreen').classList.remove('hidden');
+renderQuestionGrid();
+showQuestion(0);
+startTimer();
+console.log('Восстановлена активная сессия');
+return;
+} catch(e) {
+console.error('Ошибка восстановления сессии:', e);
+}
+}
+}
+} catch(e) {
+console.error('Ошибка проверки сессии:', e);
+}
+}
 
-        // Режим просмотра ошибок
-        function reviewMode() {
-            isReviewMode = true;
-            document.getElementById('resultScreen').classList.add('hidden');
-            document.getElementById('quizScreen').classList.remove('hidden');
-            document.getElementById('finishBtn').style.display = 'none';
-            document.getElementById('reportBtn').style.display = 'none';
-            document.querySelector('.navigation').style.display = 'none';
-            showQuestion(0);
-        }
+clearExpiredSessions();
+}
+// Очистка просроченных сессий
+function clearExpiredSessions() {
+localStorage.removeItem('active_session');
+}
+// Показать ошибку входа
+function showLoginError(message) {
+const errorDiv = document.getElementById('loginError');
+errorDiv.textContent = message;
+errorDiv.classList.add('show');
 
-        // Повтор теста
-        function retrySameTest() {
-            answers = {};
-            timeLeft = 30 * 60;
-            isReviewMode = false;
-            
-            document.getElementById('resultScreen').classList.add('hidden');
-            document.getElementById('quizScreen').classList.remove('hidden');
-            document.getElementById('finishBtn').style.display = 'block';
-            document.getElementById('reportBtn').style.display = 'block';
-            document.querySelector('.navigation').style.display = 'flex';
-            
-            showQuestion(0);
-            startTimer();
-        }
+setTimeout(() => {
+errorDiv.classList.remove('show');
+}, 5000);
+}
+// Проверка логина в базе данных
+async function checkLoginAccess(login) {
+if (!db) {
+// Оффлайн режим - демо доступ
+const demoLogins = ['student123', 'user123', 'testuser'];
+if (demoLogins.includes(login)) {
+return { allowed: true, userData: { approved: true } };
+}
+return { allowed: false, reason: 'Логин не найден (оффлайн)' };
+}
 
-        // Новый тест по тому же предмету
-        function newTestSameSubject() {
-            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-            localStorage.removeItem(storageKey);
-            location.reload();
-        }
+try {
+// ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем в коллекции "allowed_users"
+const userDoc = await db.collection("allowed_users").doc(login).get();
 
-        // Выход
-        async function logout() {
-            localStorage.removeItem('active_session');
-            
-            if (db && currentUser.login) {
-                await updateSessionInfo(currentUser.login, false);
-            }
-            
-            location.reload();
-        }
+if (userDoc.exists) {
+const userData = userDoc.data();
 
-        // Сообщить об ошибке
-        function reportError() {
-            const currentQuestion = questions[currentQuestionIndex];
-            const errorMessage = `Сообщение об ошибке в вопросе ${currentQuestionIndex + 1}:\n\n${currentQuestion.text}\n\nОпишите ошибку:`;
-            
-            const userReport = prompt(errorMessage);
-            if (userReport && userReport.trim() !== '') {
-                alert('Спасибо за сообщение! Ошибка будет исправлена.');
-                console.log('Ошибка в вопросе:', {
-                    questionIndex: currentQuestionIndex,
-                    question: currentQuestion.text,
-                    userReport: userReport
-                });
-            }
-        }
-    </script>
+if (!userData.approved) {
+return { allowed: false, reason: 'Доступ не разрешен администратором' };
+}
+
+if (userData.activeSession && userData.activeSession !== deviceId) {
+const sessionTime = userData.sessionTimestamp || 0;
+const currentTime = new Date().getTime();
+const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
+
+if (hoursDiff < 12) {
+return {
+allowed: false,
+reason: 'Уже используется на другом устройстве',
+userData: userData
+};
+}
+}
+
+return {
+allowed: true,
+userData: userData
+};
+}
+
+return { allowed: false, reason: 'Логин не найден' };
+} catch (error) {
+console.error('Ошибка проверки логина:', error);
+return { allowed: false, reason: 'Ошибка соединения' };
+}
+}
+// Обновление информации о сессии
+async function updateSessionInfo(login, startSession = true) {
+if (!db) return;
+
+try {
+const updateData = {
+lastLogin: new Date(),
+lastDevice: deviceId
+};
+
+if (startSession) {
+updateData.activeSession = deviceId;
+updateData.sessionTimestamp = new Date().getTime();
+} else {
+updateData.activeSession = null;
+updateData.sessionTimestamp = null;
+}
+
+// ИСПРАВЛЕНО: Используем коллекцию "allowed_users"
+await db.collection("allowed_users").doc(login).update(updateData);
+return true;
+} catch (error) {
+console.error('Ошибка обновления сессии:', error);
+return false;
+}
+}
+// Функция входа
+async function tryLogin(event) {
+event.preventDefault();
+console.log(" 🟢  ПОПЫТКА ВХОДА");
+
+const login = document.getElementById('loginInput').value.trim();
+const name = document.getElementById('nameInput').value.trim();
+const subject = document.getElementById('subjectSelect').value;
+const btn = event.currentTarget;
+
+if (!login || login.length < 3) {
+showLoginError('Логин должен содержать минимум 3 символа');
+return;
+}
+
+if (!name) {
+showLoginError('Введите ваше имя');
+return;
+}
+
+if (!subject) {
+showLoginError('Выберите предмет для тестирования');
+return;
+}
+
+btn.disabled = true;
+const originalText = btn.innerHTML;
+btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
+
+try {
+const accessCheck = await checkLoginAccess(login);
+
+if (!accessCheck.allowed) {
+if (accessCheck.reason === 'Уже используется на другом устройстве') {
+document.getElementById('loginScreen').classList.add('hidden');
+document.getElementById('blockedScreen').classList.remove('hidden');
+} else {
+showLoginError(`Доступ запрещен: ${accessCheck.reason || 'логин не найден'}`);
+}
+btn.disabled = false;
+btn.innerHTML = originalText;
+return;
+}
+
+await updateSessionInfo(login, true);
+
+currentUser = {
+login: login,
+name: name,
+subject: subject,
+deviceId: deviceId
+};
+
+currentTestId = Date.now().toString(36);
+currentSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+
+localStorage.setItem('active_session', JSON.stringify({
+user: currentUser,
+testId: currentTestId,
+sessionId: currentSessionId,
+timestamp: new Date().getTime()
+}));
+
+document.getElementById('loginScreen').classList.add('hidden');
+document.getElementById('quizScreen').classList.remove('hidden');
+
+await loadQuestions();
+renderQuestionGrid();
+showQuestion(0);
+startTimer();
+
+console.log(" 🟢  ТЕСТ ЗАПУЩЕН для пользователя:", login);
+
+} catch (error) {
+console.error('Ошибка при входе:', error);
+showLoginError('Ошибка при входе. Попробуйте еще раз.');
+btn.disabled = false;
+btn.innerHTML = originalText;
+}
+}
+// Загрузка вопросов - ИСПРАВЛЕННАЯ ВЕРСИЯ
+async function loadQuestions() {
+const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+const savedTest = localStorage.getItem(storageKey);
+
+// ИСПРАВЛЕНИЕ: Если сохраненный тест есть, используем его
+if (savedTest) {
+try {
+const parsed = JSON.parse(savedTest);
+const savedTime = parsed.timestamp;
+const currentTime = new Date().getTime();
+const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
+
+if (hoursDiff < 24 && parsed.questions && parsed.questions.length >= 1) {
+questions = parsed.questions;
+currentTestId = parsed.testId || currentTestId;
+console.log('Используем сохраненный тест из localStorage');
+return;
+}
+} catch(e) {
+console.log('Ошибка чтения сохраненного теста:', e);
+}
+}
+
+// Генерация вопросов с запросом к БД
+await generateQuestionsForSubject();
+console.log('Сгенерирован новый тест, вопросов:', questions.length);
+}
+// Генерация вопросов по предмету - ТЕПЕРЬ С ЗАГРУЗКОЙ ИЗ БД
+async function generateQuestionsForSubject() {
+questions = [];
+let dbQuestions = [];
+
+if (db) {
+try {
+console.log('Загрузка вопросов из Firebase для:', currentUser.subject);
+// Загружаем ВСЕ вопросы по предмету
+const snapshot = await db.collection('questions')
+.where('subject', '==', currentUser.subject)
+.get();
+
+if (!snapshot.empty) {
+snapshot.forEach(doc => {
+let q = doc.data();
+// Перемешиваем варианты ответов
+let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
+opts.sort(() => Math.random() - 0.5);
+
+// Находим новый индекс правильного ответа
+const correctIdx = opts.findIndex(o => o.isCorrect);
+
+dbQuestions.push({
+text: q.text,
+shuffledOptions: opts,
+correctIndex: correctIdx
+});
+});
+console.log(`Найдено ${dbQuestions.length} вопросов в базе`);
+} else {
+console.log('Вопросов в базе нет, используем резервные');
+}
+} catch (e) {
+console.error('Ошибка загрузки из БД:', e);
+}
+}
+
+// Если вопросы из базы есть, используем их
+if (dbQuestions.length > 0) {
+// Перемешиваем вопросы
+dbQuestions.sort(() => Math.random() - 0.5);
+// Берем максимум 30
+questions = dbQuestions.slice(0, 30);
+} else {
+// РЕЗЕРВ: Если базы нет или оффлайн, генерируем заглушки чтобы не крашилось
+for (let i = 0; i < 30; i++) {
+let question;
+if (currentUser.subject === 'physics') {
+const physicsQuestions = [
+{
+text: "Второй закон Ньютона формулируется как:",
+shuffledOptions: [
+{ text: "Сила равна произведению массы на ускорение", isCorrect: true },
+{ text: "Действию всегда есть равное и противоположное противодействие", isCorrect: false },
+{ text: "Тело сохраняет состояние покоя или равномерного прямолинейного движения", isCorrect: false },
+{ text: "Энергия не создается и не уничтожается", isCorrect: false }
+],
+correctIndex: 0
+},
+{
+text: "Что такое инерция?",
+shuffledOptions: [
+{ text: "Свойство тел сохранять состояние покоя или равномерного движения", isCorrect: true },
+{ text: "Сила притяжения между телами", isCorrect: false },
+{ text: "Способность тел совершать работу", isCorrect: false },
+{ text: "Изменение скорости тела", isCorrect: false }
+],
+correctIndex: 0
+}
+];
+question = physicsQuestions[i % physicsQuestions.length];
+} else if (currentUser.subject === 'biology') {
+const biologyQuestions = [
+{
+text: "Основная структурная и функциональная единица живого организма:",
+shuffledOptions: [
+{ text: "Клетка", isCorrect: true },
+{ text: "Ткань", isCorrect: false },
+{ text: "Орган", isCorrect: false },
+{ text: "Молекула", isCorrect: false }
+],
+correctIndex: 0
+},
+{
+text: "Процесс фотосинтеза происходит в:",
+shuffledOptions: [
+{ text: "Хлоропластах", isCorrect: true },
+{ text: "Митохондриях", isCorrect: false },
+{ text: "Ядре", isCorrect: false },
+{ text: "Рибосомах", isCorrect: false }
+],
+correctIndex: 0
+}
+];
+question = biologyQuestions[i % biologyQuestions.length];
+} else {
+question = {
+text: `(Резерв) Вопрос ${i + 1} по предмету ${currentUser.subject}. База данных недоступна.`,
+shuffledOptions: [
+{ text: "Правильный ответ", isCorrect: true },
+{ text: "Неправильный вариант 1", isCorrect: false },
+{ text: "Неправильный вариант 2", isCorrect: false },
+{ text: "Неправильный вариант 3", isCorrect: false }
+],
+correctIndex: 0
+};
+}
+// Перемешиваем варианты для резервных вопросов
+if (!question.shuffledOptions[0].text) { // Если не перемешаны
+question.shuffledOptions = [...question.shuffledOptions].sort(() => Math.random() - 0.5);
+const correctOptionText = question.shuffledOptions.find(opt => opt.isCorrect).text;
+question.correctIndex = question.shuffledOptions.findIndex(opt => opt.text === correctOptionText);
+}
+questions.push(question);
+}
+}
+
+// Сохраняем сгенерированные вопросы
+const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+localStorage.setItem(storageKey, JSON.stringify({
+questions: questions,
+answers: answers,
+testId: currentTestId,
+timestamp: new Date().getTime(),
+subject: currentUser.subject
+}));
+}
+// Рендеринг сетки вопросов
+function renderQuestionGrid() {
+const grid = document.getElementById('qGrid');
+grid.innerHTML = '';
+
+// Показываем столько ячеек, сколько загрузилось вопросов
+for (let i = 0; i < questions.length; i++) {
+const item = document.createElement('div');
+item.className = 'grid-item';
+item.textContent = i + 1;
+item.onclick = () => showQuestion(i);
+
+if (answers[i] !== undefined) {
+item.classList.add('done');
+}
+
+grid.appendChild(item);
+}
+}
+// Показать вопрос
+function showQuestion(index) {
+if (index < 0 || index >= questions.length) return;
+
+currentQuestionIndex = index;
+const question = questions[index];
+
+document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
+document.getElementById('qText').textContent = question.text;
+
+const optionsArea = document.getElementById('optionsArea');
+optionsArea.innerHTML = '';
+
+question.shuffledOptions.forEach((option, optionIndex) => {
+const button = document.createElement('button');
+button.className = 'option';
+button.textContent = option.text;
+
+if (isReviewMode) {
+if (option.isCorrect) {
+button.classList.add('correct');
+}
+if (answers[index] === optionIndex && !option.isCorrect) {
+button.classList.add('wrong');
+}
+} else {
+if (answers[index] === optionIndex) {
+button.classList.add('selected');
+}
+button.onclick = () => selectAnswer(optionIndex);
+}
+
+optionsArea.appendChild(button);
+});
+
+// Обновляем сетку
+document.querySelectorAll('.grid-item').forEach((item, i) => {
+item.classList.remove('active');
+item.classList.toggle('done', answers[i] !== undefined);
+
+if (i === index) {
+item.classList.add('active');
+}
+});
+}
+// Выбор ответа
+function selectAnswer(optionIndex) {
+if (isReviewMode) return;
+
+answers[currentQuestionIndex] = optionIndex;
+
+// Обновляем сетку
+const gridItem = document.querySelector(`.grid-item:nth-child(${currentQuestionIndex + 1})`);
+if (gridItem) {
+gridItem.classList.add('done');
+}
+
+// Автоматический переход к следующему вопросу через 0.5 секунды
+setTimeout(() => {
+if (currentQuestionIndex < questions.length - 1) {
+showQuestion(currentQuestionIndex + 1);
+}
+}, 500);
+}
+// Следующий вопрос
+function nextQuestion() {
+if (currentQuestionIndex < questions.length - 1) {
+showQuestion(currentQuestionIndex + 1);
+} else {
+alert('Это последний вопрос!');
+}
+}
+// Предыдущий вопрос
+function prevQuestion() {
+if (currentQuestionIndex > 0) {
+showQuestion(currentQuestionIndex - 1);
+}
+}
+// Таймер
+function startTimer() {
+clearInterval(timerInterval);
+timeLeft = 30 * 60;
+
+updateTimerDisplay();
+
+timerInterval = setInterval(() => {
+timeLeft--;
+updateTimerDisplay();
+
+if (timeLeft <= 0) {
+clearInterval(timerInterval);
+finishTest();
+}
+}, 1000);
+}
+function updateTimerDisplay() {
+const minutes = Math.floor(timeLeft / 60);
+const seconds = timeLeft % 60;
+document.getElementById('timer').textContent =
+`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+// Завершение теста
+async function finishTest() {
+clearInterval(timerInterval);
+
+let correctCount = 0;
+questions.forEach((question, index) => {
+if (answers[index] !== undefined) {
+if (question.shuffledOptions[answers[index]].isCorrect) {
+correctCount++;
+}
+}
+});
+
+await saveTestResults(correctCount);
+showResults(correctCount);
+}
+// Сохранение результатов
+async function saveTestResults(score) {
+const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+const testData = {
+questions: questions,
+answers: answers,
+score: score,
+testId: currentTestId,
+timestamp: new Date().getTime(),
+subject: currentUser.subject
+};
+
+localStorage.setItem(storageKey, JSON.stringify(testData));
+
+if (db && currentUser.login) {
+try {
+await db.collection("test_results").add({
+studentLogin: currentUser.login,
+studentName: currentUser.name,
+subject: currentUser.subject,
+score: score,
+total: questions.length,
+percentage: Math.round((score / questions.length) * 100),
+testId: currentTestId,
+deviceId: deviceId,
+date: new Date(),
+answers: answers,
+timeSpent: (30 * 60) - timeLeft
+});
+console.log('Результаты сохранены в Firebase');
+} catch (error) {
+console.error('Ошибка сохранения результатов:', error);
+}
+}
+}
+// Показать результаты
+function showResults(score) {
+document.getElementById('quizScreen').classList.add('hidden');
+document.getElementById('resultScreen').classList.remove('hidden');
+
+const percentage = Math.round((score / questions.length) * 100);
+document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
+
+let message = '';
+if (percentage >= 90) {
+message = 'Отлично! Вы показали прекрасный результат!';
+} else if (percentage >= 70) {
+message = 'Хорошо! Вы хорошо справились с тестом.';
+} else if (percentage >= 50) {
+message = 'Удовлетворительно. Есть над чем поработать.';
+} else {
+message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
+}
+
+document.getElementById('resultMessage').innerHTML = `
+${message}<br><br>
+<strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
+Ваш результат сохранен.
+`;
+}
+// Режим просмотра ошибок
+function reviewMode() {
+isReviewMode = true;
+document.getElementById('resultScreen').classList.add('hidden');
+document.getElementById('quizScreen').classList.remove('hidden');
+document.getElementById('finishBtn').style.display = 'none';
+document.getElementById('reportBtn').style.display = 'none';
+document.querySelector('.navigation').style.display = 'none';
+showQuestion(0);
+}
+// Повтор теста
+function retrySameTest() {
+answers = {};
+timeLeft = 30 * 60;
+isReviewMode = false;
+
+document.getElementById('resultScreen').classList.add('hidden');
+document.getElementById('quizScreen').classList.remove('hidden');
+document.getElementById('finishBtn').style.display = 'block';
+document.getElementById('reportBtn').style.display = 'block';
+document.querySelector('.navigation').style.display = 'flex';
+
+showQuestion(0);
+startTimer();
+}
+// Новый тест по тому же предмету
+function newTestSameSubject() {
+const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+localStorage.removeItem(storageKey);
+location.reload();
+}
+// Выход
+async function logout() {
+localStorage.removeItem('active_session');
+
+if (db && currentUser.login) {
+await updateSessionInfo(currentUser.login, false);
+}
+
+location.reload();
+}
+// Сообщить об ошибке
+function reportError() {
+const currentQuestion = questions[currentQuestionIndex];
+const errorMessage = `Сообщение об ошибке в вопросе ${currentQuestionIndex + 1}:\n\n${currentQuestion.text}\n\nОпишите ошибку:`;
+
+const userReport = prompt(errorMessage);
+if (userReport && userReport.trim() !== '') {
+alert('Спасибо за сообщение! Ошибка будет исправлена.');
+if (db) {
+db.collection("reports").add({
+questionText: currentQuestion.text,
+reason: userReport,
+student: currentUser.login,
+studentName: currentUser.name,
+date: new Date()
+});
+}
+}
+}
+</script>
 </body>
 </html>
