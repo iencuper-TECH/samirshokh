@@ -542,26 +542,24 @@
                 return;
             }
 
-            // Принимаем ЛЮБОЙ формат номера
-// Убираем все не-цифры
-phone = phone.replace(/\D/g, '');
-
-// Автоматически преобразуем форматы
-if (phone.startsWith('8')) {
-    phone = '998' + phone.substring(1); // 8777123456 → 998777123456
-} else if (phone.startsWith('7') && phone.length === 11) {
-    phone = '998' + phone.substring(1); // 77712345678 → 9987712345678
-} else if (phone.length === 9 && phone.startsWith('77')) {
-    phone = '998' + phone; // 777123456 → 998777123456
-} else if (phone.length === 10 && phone.startsWith('9')) {
-    phone = '998' + phone.substring(1); // 9012345678 → 998012345678
-}
-
-// Если все еще не 998XXXXXXXXX - пробуем как есть
-if (!phone.match(/^998[0-9]{9}$/)) {
-    // Просто пропускаем - пусть Firebase сам решит
-    console.log("Номер в нестандартном формате:", phone);
-}
+                        // ПРИНИМАЕМ ЛЮБОЙ ФОРМАТ НОМЕРА
+            phone = phone.replace(/\D/g, ''); // Убираем все не-цифры
+            
+            // АВТОМАТИЧЕСКАЯ КОНВЕРТАЦИЯ
+            if (phone.startsWith('8') && phone.length === 11) {
+                phone = '998' + phone.substring(1); // 87771234567 → 9987771234567
+            } else if (phone.startsWith('7') && phone.length === 11) {
+                phone = '998' + phone.substring(1); // 77712345678 → 9987712345678
+            } else if (phone.length === 10 && phone.startsWith('9')) {
+                phone = '998' + phone.substring(1); // 9012345678 → 998012345678
+            } else if (phone.length === 9) {
+                phone = '998' + phone; // 777123456 → 998777123456
+            } else if (phone.length === 12 && phone.startsWith('998')) {
+                // Уже в правильном формате
+            } else {
+                // Любой другой формат - просто пробуем
+                console.log("Номер в нестандартном формате:", phone);
+            }
 
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
