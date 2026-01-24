@@ -151,6 +151,7 @@
             display: none !important;
         }
         
+        /* Стили для теста остаются такими же */
         .quiz-header {
             display: flex;
             justify-content: space-between;
@@ -176,7 +177,6 @@
             font-weight: 600;
         }
         
-        /* Улучшенная сетка вопросов для мобильных */
         .question-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -224,7 +224,6 @@
             min-height: 400px;
         }
         
-        /* Улучшенный контейнер для вопроса */
         .question-container {
             flex: 1;
             display: flex;
@@ -248,7 +247,6 @@
             flex-shrink: 0;
         }
         
-        /* Улучшенный контейнер для вариантов ответов */
         .options-container {
             display: flex;
             flex-direction: column;
@@ -259,7 +257,6 @@
             max-height: 350px;
         }
         
-        /* Улучшенные кнопки ответов */
         .option {
             padding: 15px;
             background: white;
@@ -302,7 +299,6 @@
             color: #991b1b;
         }
         
-        /* Полоса прокрутки для вариантов ответов */
         .options-container::-webkit-scrollbar {
             width: 6px;
         }
@@ -390,36 +386,36 @@
             color: var(--danger);
         }
         
+        /* Сообщения об ошибках */
+        .error-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .access-info {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
         /* Адаптация для очень маленьких экранов */
         @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                padding: 5px;
-            }
-            
-            .header {
-                padding: 20px 15px;
-            }
-            
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .header p {
-                font-size: 13px;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
             .question-grid {
                 grid-template-columns: repeat(5, 1fr);
-                gap: 5px;
-                padding: 12px;
             }
             
             .grid-item {
@@ -428,39 +424,16 @@
                 font-size: 11px;
             }
             
-            .question-content {
-                padding: 15px;
-                min-height: 350px;
-            }
-            
             .question-text {
                 font-size: 15px;
-                padding: 12px;
-                line-height: 1.4;
-                margin-bottom: 15px;
             }
             
             .option {
                 font-size: 13px;
-                padding: 12px;
                 min-height: 55px;
-            }
-            
-            .options-container {
-                max-height: 300px;
-            }
-            
-            .result-score {
-                font-size: 50px;
-            }
-            
-            .timer {
-                font-size: 12px;
-                padding: 5px 10px;
             }
         }
         
-        /* Для экстремально маленьких экранов */
         @media (max-width: 360px) {
             .question-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -471,102 +444,40 @@
                 min-width: 30px;
                 font-size: 10px;
             }
-            
-            .question-text {
-                font-size: 14px;
-                padding: 10px;
-            }
-            
-            .option {
-                font-size: 12px;
-                padding: 10px;
-                min-height: 50px;
-            }
-            
-            .btn {
-                padding: 12px;
-                font-size: 14px;
-            }
-            
-            .form-control {
-                padding: 10px 12px;
-                font-size: 14px;
-            }
-            
-            .question-content {
-                min-height: 320px;
-            }
-            
-            .options-container {
-                max-height: 280px;
-            }
-        }
-        
-        /* Для горизонтальной ориентации на мобильных */
-        @media (max-height: 600px) and (orientation: landscape) {
-            .question-content {
-                min-height: 250px;
-            }
-            
-            .options-container {
-                max-height: 200px;
-            }
-            
-            .question-grid {
-                grid-template-columns: repeat(8, 1fr);
-            }
-        }
-        
-        /* Для планшетов и больших экранов */
-        @media (min-width: 768px) {
-            .container {
-                max-width: 600px;
-            }
-            
-            .question-grid {
-                grid-template-columns: repeat(6, 1fr);
-            }
-            
-            .grid-item {
-                height: 40px;
-                min-width: 40px;
-                font-size: 14px;
-            }
-            
-            .question-text {
-                font-size: 18px;
-            }
-            
-            .option {
-                font-size: 16px;
-                padding: 16px;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- HTML код остается таким же как в предыдущей версии -->
     <div class="container">
         <!-- Экран входа -->
         <div id="loginScreen" class="card">
             <div class="header">
                 <h1>📚 Тестовая система</h1>
-                <p>Проверка знаний по учебным дисциплинам</p>
+                <p>Доступ по индивидуальному логину</p>
             </div>
             <div class="content">
+                <div id="loginError" class="error-message"></div>
+                
                 <div class="form-group">
-                    <label for="nameInput"><i class="fas fa-user"></i> Фамилия и Имя</label>
-                    <input type="text" id="nameInput" class="form-control" placeholder="Иванов Иван">
+                    <label for="loginInput"><i class="fas fa-key"></i> Логин для входа</label>
+                    <input type="text" id="loginInput" class="form-control" 
+                           placeholder="Введите ваш логин" 
+                           autocomplete="off"
+                           autocapitalize="off"
+                           spellcheck="false">
                 </div>
                 
                 <div class="form-group">
-                    <label for="phoneInput"><i class="fas fa-phone"></i> Номер телефона</label>
-                    <input type="tel" id="phoneInput" class="form-control" placeholder="998901234567">
+                    <label for="nameInput"><i class="fas fa-user"></i> Ваше имя</label>
+                    <input type="text" id="nameInput" class="form-control" 
+                           placeholder="Иванов Иван"
+                           autocomplete="off">
                 </div>
                 
                 <div class="form-group">
-                    <label for="subjectSelect"><i class="fas fa-book"></i> Предмет</label>
+                    <label for="subjectSelect"><i class="fas fa-book"></i> Предмет тестирования</label>
                     <select id="subjectSelect" class="form-control">
+                        <option value="">-- Выберите предмет --</option>
                         <option value="anatomy">Анатомия</option>
                         <option value="biology">Биология</option>
                         <option value="chemistry">Химия</option>
@@ -582,12 +493,42 @@
                 </div>
                 
                 <button class="btn" onclick="tryLogin(event)">
-                    <i class="fas fa-play-circle"></i> Начать тестирование
+                    <i class="fas fa-sign-in-alt"></i> Войти и начать тест
                 </button>
+                
+                <div class="access-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Доступ только для авторизованных пользователей. 
+                    Логин предоставляет администратор.
+                </div>
                 
                 <a href="https://t.me/dr_samirshokh" class="dev-link" target="_blank">
                     <i class="fas fa-question-circle"></i> Техническая поддержка
                 </a>
+            </div>
+        </div>
+
+        <!-- Экран блокировки (если устройство уже используется) -->
+        <div id="blockedScreen" class="card hidden">
+            <div class="header" style="background: var(--danger);">
+                <h1>⛔ Доступ ограничен</h1>
+                <p>Обнаружена попытка входа с другого устройства</p>
+            </div>
+            <div class="content">
+                <div style="text-align: center; padding: 30px 0;">
+                    <i class="fas fa-lock" style="font-size: 60px; color: var(--danger); margin-bottom: 20px;"></i>
+                    <h3 style="margin-bottom: 15px; color: var(--danger);">Доступ уже активен на другом устройстве</h3>
+                    <p style="margin-bottom: 20px; color: #6b7280;">
+                        Вы не можете войти с этого устройства, так как ваш аккаунт уже используется.
+                    </p>
+                    <p style="margin-bottom: 30px; color: #6b7280;">
+                        Если это ошибка, обратитесь к администратору для сброса доступа.
+                    </p>
+                    
+                    <button class="btn" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> Попробовать снова
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -649,17 +590,22 @@
                         <i class="fas fa-plus-circle"></i> Новый тест по предмету
                     </button>
                     
-                    <button class="btn btn-danger" onclick="location.reload()">
-                        <i class="fas fa-sign-out-alt"></i> Выйти в меню
+                    <button class="btn btn-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Завершить сеанс
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript код остается таким же как в предыдущей версии -->
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Config file -->
+    <script src="config.js"></script>
+
     <script>
-        // JavaScript код из предыдущей рабочей версии
         // Глобальные переменные
         let questions = [];
         let answers = {};
@@ -670,98 +616,293 @@
         let isReviewMode = false;
         let currentTestId = null;
         let db = null;
+        let currentSessionId = null;
+        let deviceId = null;
 
-        // Генерация deviceId
-        let deviceId = localStorage.getItem('device_id') || 'web_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('device_id', deviceId);
-
-        // Восстановление данных пользователя
-        const savedUser = localStorage.getItem('lastUser');
-        if (savedUser) {
-            try {
-                const user = JSON.parse(savedUser);
-                document.getElementById('nameInput').value = user.name || '';
-                document.getElementById('phoneInput').value = user.phone || '';
-                if (user.subject) {
-                    document.getElementById('subjectSelect').value = user.subject;
+        // Инициализация Firebase
+        function initFirebase() {
+            if (typeof firebase !== 'undefined' && window.firebaseConfig) {
+                try {
+                    firebase.initializeApp(window.firebaseConfig);
+                    db = firebase.firestore();
+                    console.log('Firebase успешно инициализирован');
+                    return true;
+                } catch (error) {
+                    console.error('Ошибка инициализации Firebase:', error);
+                    return false;
                 }
-            } catch(e) {
-                console.log('Не удалось восстановить данные');
+            }
+            return false;
+        }
+
+        // Генерация уникального ID устройства
+        function generateDeviceId() {
+            // Используем несколько источников для уникальности
+            const sources = [
+                navigator.userAgent,
+                navigator.platform,
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                new Date().getTime(),
+                Math.random().toString(36).substr(2, 9)
+            ];
+            
+            let hash = '';
+            sources.forEach(source => {
+                // Простой хэш
+                for(let i = 0; i < source.length; i++) {
+                    hash += source.charCodeAt(i).toString(36);
+                }
+            });
+            
+            // Берем только часть хэша для удобства
+            return 'dev_' + hash.substr(0, 20);
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Генерируем ID устройства
+            deviceId = localStorage.getItem('device_id') || generateDeviceId();
+            localStorage.setItem('device_id', deviceId);
+            
+            console.log('Device ID:', deviceId);
+            
+            // Инициализируем Firebase
+            if (!initFirebase()) {
+                showLoginError('Режим оффлайн. Некоторые функции могут быть недоступны.');
+            }
+            
+            // Проверяем активную сессию
+            checkActiveSession();
+        });
+
+        // Проверка активной сессии для этого устройства
+        function checkActiveSession() {
+            const activeSession = localStorage.getItem('active_session');
+            if (activeSession) {
+                try {
+                    const session = JSON.parse(activeSession);
+                    const sessionTime = session.timestamp;
+                    const currentTime = new Date().getTime();
+                    const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
+                    
+                    // Если сессия активна менее 12 часов, показываем тест
+                    if (hoursDiff < 12) {
+                        currentUser = session.user;
+                        currentTestId = session.testId;
+                        
+                        // Загружаем сохраненные вопросы
+                        const savedQuestions = localStorage.getItem(`test_${session.user.login}_${session.user.subject}`);
+                        if (savedQuestions) {
+                            try {
+                                const parsed = JSON.parse(savedQuestions);
+                                questions = parsed.questions || [];
+                                answers = parsed.answers || {};
+                                
+                                // Показываем тест
+                                document.getElementById('loginScreen').classList.add('hidden');
+                                document.getElementById('quizScreen').classList.remove('hidden');
+                                renderQuestionGrid();
+                                showQuestion(0);
+                                startTimer();
+                                console.log('Восстановлена активная сессия');
+                                return;
+                            } catch(e) {
+                                console.error('Ошибка восстановления сессии:', e);
+                            }
+                        }
+                    }
+                } catch(e) {
+                    console.error('Ошибка проверки сессии:', e);
+                }
+            }
+            
+            // Очищаем старые сессии
+            clearExpiredSessions();
+        }
+
+        // Очистка просроченных сессий
+        function clearExpiredSessions() {
+            localStorage.removeItem('active_session');
+        }
+
+        // Показать ошибку входа
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Проверка логина в базе данных
+        async function checkLoginAccess(login) {
+            if (!db) {
+                // В оффлайн режиме проверяем локально
+                const allowedLogins = JSON.parse(localStorage.getItem('allowed_logins') || '[]');
+                return allowedLogins.includes(login);
+            }
+            
+            try {
+                const userDoc = await db.collection("users").doc(login).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем поле approved
+                    if (!userData.approved) {
+                        return { allowed: false, reason: 'Доступ не разрешен администратором' };
+                    }
+                    
+                    // Проверяем, не используется ли уже этот логин на другом устройстве
+                    if (userData.activeSession && userData.activeSession !== deviceId) {
+                        // Проверяем время сессии
+                        const sessionTime = userData.sessionTimestamp || 0;
+                        const currentTime = new Date().getTime();
+                        const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
+                        
+                        // Если сессия активна менее 12 часов, блокируем вход
+                        if (hoursDiff < 12) {
+                            return { 
+                                allowed: false, 
+                                reason: 'Уже используется на другом устройстве',
+                                userData: userData 
+                            };
+                        }
+                    }
+                    
+                    return { 
+                        allowed: true, 
+                        userData: userData 
+                    };
+                }
+                
+                return { allowed: false, reason: 'Логин не найден' };
+            } catch (error) {
+                console.error('Ошибка проверки логина:', error);
+                return { allowed: false, reason: 'Ошибка соединения' };
             }
         }
 
-        // Инициализация Firebase (если config существует)
-        if (typeof firebase !== 'undefined' && window.firebaseConfig) {
+        // Обновление информации о сессии в базе
+        async function updateSessionInfo(login, startSession = true) {
+            if (!db) return;
+            
             try {
-                firebase.initializeApp(window.firebaseConfig);
-                db = firebase.firestore();
-                console.log('Firebase успешно инициализирован');
+                const updateData = {
+                    lastLogin: new Date(),
+                    lastDevice: deviceId
+                };
+                
+                if (startSession) {
+                    updateData.activeSession = deviceId;
+                    updateData.sessionTimestamp = new Date().getTime();
+                } else {
+                    updateData.activeSession = null;
+                    updateData.sessionTimestamp = null;
+                }
+                
+                // ИСПРАВЛЕНО: Теперь используем "users" вместо "allowed_users"
+                await db.collection("users").doc(login).update(updateData);
+                return true;
             } catch (error) {
-                console.error('Ошибка инициализации Firebase:', error);
+                console.error('Ошибка обновления сессии:', error);
+                return false;
             }
-        } else {
-            console.warn('Firebase config не найден. Работаем в оффлайн режиме.');
         }
 
         // ОСНОВНАЯ ФУНКЦИЯ ВХОДА
         async function tryLogin(event) {
             event.preventDefault();
-            console.log("🟢 КНОПКА РАБОТАЕТ!");
+            console.log("🟢 ПОПЫТКА ВХОДА");
             
             // Получаем данные из формы
+            const login = document.getElementById('loginInput').value.trim();
             const name = document.getElementById('nameInput').value.trim();
-            let phone = document.getElementById('phoneInput').value.trim();
             const subject = document.getElementById('subjectSelect').value;
             const btn = event.currentTarget;
             
-            console.log("Введено:", {name, phone, subject});
-            
             // Проверяем заполненность полей
-            if (!name || !phone) {
-                alert('Введите имя и номер телефона!');
+            if (!login || login.length < 3) {
+                showLoginError('Логин должен содержать минимум 3 символа');
+                return;
+            }
+            
+            if (!name) {
+                showLoginError('Введите ваше имя');
                 return;
             }
             
             if (!subject) {
-                alert('Выберите предмет!');
+                showLoginError('Выберите предмет для тестирования');
                 return;
             }
-            
-            // Форматируем телефон
-            phone = phone.replace(/\D/g, '');
-            
-            if (phone.startsWith('8') && phone.length === 11) {
-                phone = '998' + phone.substring(1);
-            } else if (phone.startsWith('7') && phone.length === 11) {
-                phone = '998' + phone.substring(1);
-            } else if (phone.length === 10 && phone.startsWith('9')) {
-                phone = '998' + phone;
-            } else if (phone.length === 9) {
-                phone = '998' + phone;
-            }
-            
-            if (!phone.startsWith('998') || phone.length !== 12) {
-                alert('Введите корректный номер телефона Узбекистана (например: 998901234567)');
-                return;
-            }
-            
-            // Сохраняем пользователя
-            currentUser = { name, phone, subject };
-            currentTestId = Date.now().toString(36);
-            
-            // Сохраняем в localStorage
-            localStorage.setItem('lastUser', JSON.stringify({
-                name: name,
-                phone: phone,
-                subject: subject
-            }));
             
             // Блокируем кнопку
             btn.disabled = true;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка вопросов...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
             
             try {
+                // Проверяем доступ
+                const accessCheck = await checkLoginAccess(login);
+                
+                if (!accessCheck.allowed) {
+                    if (accessCheck.reason === 'Уже используется на другом устройстве') {
+                        // Показываем экран блокировки
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('blockedScreen').classList.remove('hidden');
+                        
+                        // Сохраняем информацию о блокировке
+                        if (accessCheck.userData) {
+                            const lastDevice = accessCheck.userData.lastDevice || 'неизвестно';
+                            const lastLogin = accessCheck.userData.lastLogin 
+                                ? new Date(accessCheck.userData.lastLogin.seconds * 1000).toLocaleString() 
+                                : 'неизвестно';
+                            
+                            console.log(`Логин ${login} уже используется на устройстве: ${lastDevice} (последний вход: ${lastLogin})`);
+                        }
+                    } else {
+                        showLoginError(`Доступ запрещен: ${accessCheck.reason || 'логин не найден'}`);
+                    }
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    return;
+                }
+                
+                // Обновляем информацию о сессии
+                await updateSessionInfo(login, true);
+                
+                // Сохраняем информацию о пользователе
+                currentUser = { 
+                    login: login, 
+                    name: name, 
+                    subject: subject,
+                    deviceId: deviceId
+                };
+                
+                currentTestId = Date.now().toString(36);
+                currentSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+                
+                // Сохраняем сессию локально
+                localStorage.setItem('active_session', JSON.stringify({
+                    user: currentUser,
+                    testId: currentTestId,
+                    sessionId: currentSessionId,
+                    timestamp: new Date().getTime()
+                }));
+                
+                // Сохраняем логин в список разрешенных (для оффлайн режима)
+                if (!db) {
+                    const allowedLogins = JSON.parse(localStorage.getItem('allowed_logins') || '[]');
+                    if (!allowedLogins.includes(login)) {
+                        allowedLogins.push(login);
+                        localStorage.setItem('allowed_logins', JSON.stringify(allowedLogins));
+                    }
+                }
+                
                 // Загружаем вопросы
                 await loadQuestions();
                 
@@ -774,17 +915,44 @@
                 showQuestion(0);
                 startTimer();
                 
-                console.log("🟢 ТЕСТ ЗАПУЩЕН!");
+                console.log("🟢 ТЕСТ ЗАПУЩЕН для пользователя:", login);
                 
             } catch (error) {
-                console.error('Ошибка при запуске теста:', error);
-                alert('Ошибка загрузки теста. Попробуйте еще раз.');
+                console.error('Ошибка при входе:', error);
+                showLoginError('Ошибка при входе. Попробуйте еще раз.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
         }
 
-        // ДЕМО ВОПРОСЫ
+        // Загрузка вопросов
+        async function loadQuestions() {
+            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+            const savedTest = localStorage.getItem(storageKey);
+            
+            if (savedTest) {
+                try {
+                    const parsed = JSON.parse(savedTest);
+                    const savedTime = parsed.timestamp;
+                    const currentTime = new Date().getTime();
+                    const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
+                    
+                    if (hoursDiff < 24 && parsed.questions && parsed.questions.length > 0) {
+                        questions = parsed.questions;
+                        currentTestId = parsed.testId || currentTestId;
+                        console.log('Используем сохраненный тест из localStorage');
+                        return;
+                    }
+                } catch(e) {
+                    console.log('Ошибка чтения сохраненного теста:', e);
+                }
+            }
+            
+            // Загружаем вопросы (остальная логика из предыдущей версии)
+            loadDemoQuestions();
+        }
+
+        // Остальные функции теста остаются такими же...
         function loadDemoQuestions() {
             questions = [
                 {
@@ -809,34 +977,6 @@
                 }
             ];
             console.log("Загружены демо-вопросы");
-        }
-
-        // Загрузка вопросов и остальные функции остаются такими же
-        async function loadQuestions() {
-            const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
-            const savedTest = localStorage.getItem(storageKey);
-            
-            if (savedTest) {
-                try {
-                    const parsed = JSON.parse(savedTest);
-                    const savedTime = parsed.timestamp;
-                    const currentTime = new Date().getTime();
-                    const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
-                    
-                    if (hoursDiff < 24 && parsed.questions && parsed.questions.length > 0) {
-                        questions = parsed.questions;
-                        currentTestId = parsed.testId || currentTestId;
-                        console.log('Используем сохраненный тест из localStorage');
-                        return;
-                    }
-                } catch(e) {
-                    console.log('Ошибка чтения сохраненного теста:', e);
-                }
-            }
-            
-            // Используем демо-вопросы
-            console.log('Используем демо-вопросы');
-            loadDemoQuestions();
         }
 
         function renderQuestionGrid() {
@@ -864,13 +1004,9 @@
                 return;
             }
             
-            // Обновляем счетчик
             document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
-            
-            // Показываем текст вопроса
             document.getElementById('qText').textContent = question.text || 'Вопрос без текста';
             
-            // Показываем варианты ответов
             const optionsArea = document.getElementById('optionsArea');
             optionsArea.innerHTML = '';
             
@@ -904,7 +1040,6 @@
                 optionsArea.appendChild(button);
             });
             
-            // Обновляем сетку вопросов
             document.querySelectorAll('.grid-item').forEach((item, i) => {
                 item.classList.remove('active');
                 item.classList.toggle('done', answers[i] !== undefined);
@@ -918,7 +1053,6 @@
         function selectAnswer(optionIndex) {
             answers[currentQuestionIndex] = optionIndex;
             
-            // Переходим к следующему вопросу через 0.5 секунды
             setTimeout(() => {
                 if (currentQuestionIndex < questions.length - 1) {
                     showQuestion(currentQuestionIndex + 1);
@@ -976,8 +1110,48 @@
                 }
             });
             
-            // Показ результатов
+            // Сохраняем результаты
+            await saveTestResults(correctCount);
+            
+            // Показываем результаты
             showResults(correctCount);
+        }
+
+        async function saveTestResults(score) {
+            // Сохраняем локально
+            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+            const testData = {
+                questions: questions,
+                answers: answers,
+                score: score,
+                testId: currentTestId,
+                timestamp: new Date().getTime(),
+                subject: currentUser.subject
+            };
+            
+            localStorage.setItem(storageKey, JSON.stringify(testData));
+            
+            // Сохраняем в Firebase если есть соединение
+            if (db && currentUser.login) {
+                try {
+                    await db.collection("test_results").add({
+                        studentLogin: currentUser.login,
+                        studentName: currentUser.name,
+                        subject: currentUser.subject,
+                        score: score,
+                        total: questions.length,
+                        percentage: Math.round((score / questions.length) * 100),
+                        testId: currentTestId,
+                        deviceId: deviceId,
+                        date: new Date(),
+                        answers: answers,
+                        timeSpent: (30 * 60) - timeLeft
+                    });
+                    console.log('Результаты сохранены в Firebase');
+                } catch (error) {
+                    console.error('Ошибка сохранения результатов:', error);
+                }
+            }
         }
 
         function showResults(score) {
@@ -1000,7 +1174,8 @@
             
             document.getElementById('resultMessage').innerHTML = `
                 ${message}<br><br>
-                <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong>
+                <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
+                Ваш результат сохранен.
             `;
         }
 
@@ -1030,8 +1205,22 @@
         }
 
         function newTestSameSubject() {
-            const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
+            const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
             localStorage.removeItem(storageKey);
+            location.reload();
+        }
+
+        // Выход из системы
+        async function logout() {
+            // Очищаем активную сессию
+            localStorage.removeItem('active_session');
+            
+            // Обновляем информацию в базе
+            if (db && currentUser.login) {
+                await updateSessionInfo(currentUser.login, false);
+            }
+            
+            // Перезагружаем страницу
             location.reload();
         }
 
