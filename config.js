@@ -9,3 +9,10 @@ const firebaseConfig = {
 };
 
 window.firebaseConfig = firebaseConfig;
+
+// Инициализация Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+// Создаем глобальную переменную db
+const db = firebase.firestore();
