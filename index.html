@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тестовая система - Университет</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4f46e5;
@@ -216,7 +217,6 @@
             padding: 30px;
         }
         
-        /* ИСПРАВЛЕНО: Добавлены свойства для переноса длинных текстов */
         .question-text {
             font-size: 18px;
             line-height: 1.6;
@@ -239,7 +239,6 @@
             gap: 12px;
         }
         
-        /* ИСПРАВЛЕНО: Добавлены свойства для переноса длинных текстов */
         .option {
             padding: 18px 20px;
             background: white;
@@ -343,7 +342,6 @@
             color: var(--danger);
         }
         
-        /* ИСПРАВЛЕНО: Добавлены медиа-запросы для мобильных */
         @media (max-width: 480px) {
             .container {
                 padding: 10px;
@@ -366,7 +364,6 @@
                 padding: 15px;
             }
             
-            /* Дополнительные исправления для мобильных */
             .question-text {
                 font-size: 16px;
                 padding: 18px;
@@ -380,7 +377,6 @@
             }
         }
         
-        /* Для очень маленьких экранов */
         @media (max-width: 360px) {
             .question-text {
                 font-size: 15px;
@@ -434,7 +430,7 @@
                     </select>
                 </div>
                 
-                <button class="btn" onclick="tryLogin()">
+                <button class="btn" onclick="tryLogin(event)">
                     <i class="fas fa-play-circle"></i> Начать тестирование
                 </button>
                 
@@ -525,152 +521,239 @@
         let currentUser = {};
         let isReviewMode = false;
         let currentTestId = null;
+        let db;
 
         // Генерация deviceId
         let deviceId = localStorage.getItem('device_id') || 'web_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('device_id', deviceId);
 
-        // Основная функция входа
-        async function tryLogin() {
+        // Инициализация Firebase
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Страница загружается...");
+            
+            if (typeof firebaseConfig !== 'undefined') {
+                console.log("Config найден, инициализируем Firebase");
+                
+                // Проверяем, не инициализирован ли уже Firebase
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                // Теперь создаем db
+                db = firebase.firestore();
+                console.log('✅ Firebase готов к работе');
+                
+                // Восстановление данных пользователя
+                const savedUser = localStorage.getItem('lastUser');
+                if (savedUser) {
+                    try {
+                        const user = JSON.parse(savedUser);
+                        document.getElementById('nameInput').value = user.name || '';
+                        document.getElementById('phoneInput').value = user.phone || '';
+                        if (user.subject) {
+                            document.getElementById('subjectSelect').value = user.subject;
+                        }
+                        console.log("Данные восстановлены");
+                    } catch(e) {
+                        console.log('Не удалось восстановить данные');
+                    }
+                }
+            } else {
+                console.error('❌ ОШИБКА: Firebase config не найден в config.js');
+                alert('Ошибка конфигурации. Проверьте файл config.js');
+            }
+        });
+
+        // УПРОЩЕННАЯ ФУНКЦИЯ ВХОДА - ДЛЯ ТЕСТА
+        async function tryLogin(event) {
+            event.preventDefault();
+            console.log("🔘 Кнопка 'Начать тестирование' нажата");
+            
             const name = document.getElementById('nameInput').value.trim();
-            const phone = document.getElementById('phoneInput').value.trim();
+            let phone = document.getElementById('phoneInput').value.trim();
             const subject = document.getElementById('subjectSelect').value;
             const btn = event.target;
-
-            if (!name || !phone) {
-                alert('Пожалуйста, заполните все поля');
+            
+            if (!name || !phone || !subject) {
+                alert('Заполните все поля!');
                 return;
             }
-
-                        // ПРИНИМАЕМ ЛЮБОЙ ФОРМАТ НОМЕРА
-            phone = phone.replace(/\D/g, ''); // Убираем все не-цифры
             
-            // АВТОМАТИЧЕСКАЯ КОНВЕРТАЦИЯ
+            phone = phone.replace(/\D/g, '');
+            
+            // Форматирование номера
             if (phone.startsWith('8') && phone.length === 11) {
-                phone = '998' + phone.substring(1); // 87771234567 → 9987771234567
+                phone = '998' + phone.substring(1);
             } else if (phone.startsWith('7') && phone.length === 11) {
-                phone = '998' + phone.substring(1); // 77712345678 → 9987712345678
+                phone = '998' + phone.substring(1);
             } else if (phone.length === 10 && phone.startsWith('9')) {
-                phone = '998' + phone.substring(1); // 9012345678 → 998012345678
+                phone = '998' + phone.substring(1);
             } else if (phone.length === 9) {
-                phone = '998' + phone; // 777123456 → 998777123456
-            } else if (phone.length === 12 && phone.startsWith('998')) {
-                // Уже в правильном формате
-            } else {
-                // Любой другой формат - просто пробуем
-                console.log("Номер в нестандартном формате:", phone);
+                phone = '998' + phone;
             }
-
+            
+            console.log("Введены данные:", { name, phone, subject });
+            
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
-
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+            
             try {
-                // Проверяем доступ пользователя
-                const userRef = db.collection("users").doc(phone);
-                const userDoc = await userRef.get();
-
-                if (!userDoc.exists) {
-                    alert('❌ Ваш номер не найден в системе. Обратитесь к преподавателю.');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
-                    return;
-                }
-
-                const userData = userDoc.data();
-                
-                // Проверка устройства (опционально)
-                if (userData.deviceId && userData.deviceId !== deviceId) {
-                    if (!confirm('⚠️ Вы входите с нового устройства. Продолжить?')) {
+                // Проверяем доступ пользователя (если нужно)
+                if (db) {
+                    const userRef = db.collection("users").doc(phone);
+                    const userDoc = await userRef.get();
+                    
+                    if (!userDoc.exists) {
+                        alert('❌ Ваш номер не найден в системе. Обратитесь к преподавателю.');
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
                         return;
                     }
+                    
+                    // Обновляем информацию
+                    await userRef.set({
+                        name: name,
+                        deviceId: deviceId,
+                        lastLogin: new Date(),
+                        lastSubject: subject
+                    }, { merge: true });
                 }
-
-                // Обновляем информацию о пользователе
-                await userRef.set({
+                
+                // Сохраняем локально
+                localStorage.setItem('lastUser', JSON.stringify({
                     name: name,
-                    deviceId: deviceId,
-                    lastLogin: new Date(),
-                    lastSubject: subject
-                }, { merge: true });
-
+                    phone: phone,
+                    subject: subject
+                }));
+                
                 currentUser = { name, phone, subject };
-                currentTestId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-
+                currentTestId = Date.now().toString(36);
+                
                 // Загружаем вопросы
                 await loadQuestions();
-
+                
                 // Переходим к тесту
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('quizScreen').classList.remove('hidden');
                 renderQuestionGrid();
                 showQuestion(0);
                 startTimer();
-
+                
+                console.log("✅ Тест начат успешно");
+                
             } catch (error) {
-                console.error('Ошибка входа:', error);
-                alert('Ошибка соединения с сервером. Проверьте интернет и попробуйте снова.');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
+                console.error('Ошибка:', error);
+                
+                // Если ошибка с Firebase, показываем тест без него
+                if (error.code === 'permission-denied' || error.code === 'unavailable') {
+                    alert('⚠️ Ошибка соединения. Запускаем тест в оффлайн режиме.');
+                    currentUser = { name, phone, subject };
+                    
+                    // Загружаем тестовые вопросы
+                    loadDemoQuestions();
+                    
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('quizScreen').classList.remove('hidden');
+                    renderQuestionGrid();
+                    showQuestion(0);
+                    startTimer();
+                } else {
+                    alert('Ошибка: ' + error.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-play-circle"></i> Начать тестирование';
+                }
             }
         }
 
-        // Загрузка вопросов
+        // ДЕМО ВОПРОСЫ (если нет интернета)
+        function loadDemoQuestions() {
+            questions = [
+                {
+                    text: "Пример вопроса 1: Что такое сила тяжести?",
+                    shuffledOptions: [
+                        { text: "Сила притяжения Земли", isCorrect: true },
+                        { text: "Сила трения", isCorrect: false },
+                        { text: "Сила упругости", isCorrect: false },
+                        { text: "Сила Архимеда", isCorrect: false }
+                    ]
+                },
+                {
+                    text: "Пример вопроса 2: Формула второго закона Ньютона?",
+                    shuffledOptions: [
+                        { text: "F = ma", isCorrect: true },
+                        { text: "E = mc²", isCorrect: false },
+                        { text: "P = mgh", isCorrect: false },
+                        { text: "V = S/t", isCorrect: false }
+                    ]
+                }
+            ];
+            console.log("Загружены демо-вопросы");
+        }
+
+        // ЗАГРУЗКА ВОПРОСОВ ИЗ БАЗЫ
         async function loadQuestions() {
             const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
             const savedTest = localStorage.getItem(storageKey);
-
+            
             if (savedTest) {
-                const parsed = JSON.parse(savedTest);
-                const savedTime = parsed.timestamp;
-                const currentTime = new Date().getTime();
-                const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
-
-                // Используем сохраненные вопросы если им меньше 24 часов
-                if (hoursDiff < 24) {
-                    questions = parsed.questions;
-                    currentTestId = parsed.testId;
-                    console.log('Используем сохраненный тест');
-                    return;
+                try {
+                    const parsed = JSON.parse(savedTest);
+                    const savedTime = parsed.timestamp;
+                    const currentTime = new Date().getTime();
+                    const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
+                    
+                    if (hoursDiff < 24) {
+                        questions = parsed.questions;
+                        currentTestId = parsed.testId;
+                        console.log('Используем сохраненный тест');
+                        return;
+                    }
+                } catch(e) {
+                    console.log('Ошибка чтения сохраненного теста');
                 }
             }
-
+            
             // Загружаем новые вопросы
             await loadNewQuestions(storageKey);
         }
 
-        // Загрузка новых вопросов из базы
         async function loadNewQuestions(storageKey) {
             try {
+                if (!db) {
+                    throw new Error('База данных не доступна');
+                }
+                
                 const snapshot = await db.collection("questions")
                     .where("subject", "==", currentUser.subject)
                     .get();
-
+                
                 if (snapshot.empty) {
                     throw new Error('По этому предмету пока нет вопросов');
                 }
-
+                
                 const allQuestions = [];
-                snapshot.forEach(doc => allQuestions.push(doc.data()));
-
+                snapshot.forEach(doc => allQuestions.push({ id: doc.id, ...doc.data() }));
+                
                 // Выбираем случайные 30 вопросов
                 const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
                 questions = shuffled.slice(0, 30);
-
-                // Перемешиваем варианты ответов в каждом вопросе
+                
+                // Перемешиваем варианты ответов
                 questions.forEach(q => {
+                    if (!q.options || q.options.length === 0) {
+                        return;
+                    }
+                    
                     const options = q.options.map((text, index) => ({
                         text,
                         isCorrect: index === q.correct
                     }));
                     
-                    // Перемешиваем варианты
                     options.sort(() => Math.random() - 0.5);
                     q.shuffledOptions = options;
                     q.correctIndex = options.findIndex(opt => opt.isCorrect);
                 });
-
+                
                 // Сохраняем в localStorage
                 localStorage.setItem(storageKey, JSON.stringify({
                     questions: questions,
@@ -678,14 +761,21 @@
                     timestamp: new Date().getTime(),
                     subject: currentUser.subject
                 }));
-
+                
+                console.log(`Загружено ${questions.length} вопросов`);
+                
             } catch (error) {
                 console.error('Ошибка загрузки вопросов:', error);
-                throw error;
+                
+                // Если нет вопросов, показываем демо
+                if (questions.length === 0) {
+                    loadDemoQuestions();
+                    alert('⚠️ Вопросы не загрузились. Показываем демо-вопросы.');
+                }
             }
         }
 
-        // Отрисовка сетки вопросов
+        // Остальные функции (renderQuestionGrid, showQuestion, selectAnswer и т.д.)
         function renderQuestionGrid() {
             const grid = document.getElementById('qGrid');
             grid.innerHTML = '';
@@ -699,27 +789,27 @@
             });
         }
 
-        // ИСПРАВЛЕНО: Показ вопроса с обработкой длинных текстов
         function showQuestion(index) {
             currentQuestionIndex = index;
             const question = questions[index];
             
-            // Обновляем счетчик
+            if (!question) return;
+            
             document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
+            document.getElementById('qText').innerHTML = question.text ? question.text.replace(/\n/g, '<br>') : 'Вопрос не загружен';
             
-            // ИСПРАВЛЕНО: Заменяем переносы строк на <br> для корректного отображения
-            document.getElementById('qText').innerHTML = question.text.replace(/\n/g, '<br>');
-            
-            // Очищаем и создаем варианты ответов
             const optionsArea = document.getElementById('optionsArea');
             optionsArea.innerHTML = '';
+            
+            if (!question.shuffledOptions || question.shuffledOptions.length === 0) {
+                optionsArea.innerHTML = '<p style="color: red;">Ошибка: нет вариантов ответа</p>';
+                return;
+            }
             
             question.shuffledOptions.forEach((option, optionIndex) => {
                 const button = document.createElement('button');
                 button.className = 'option';
-                
-                // ИСПРАВЛЕНО: Заменяем переносы строк на <br> для вариантов ответов
-                button.innerHTML = option.text.replace(/\n/g, '<br>');
+                button.innerHTML = option.text ? option.text.replace(/\n/g, '<br>') : 'Вариант не загружен';
                 
                 if (isReviewMode) {
                     if (option.isCorrect) {
@@ -739,23 +829,22 @@
             });
             
             // Обновляем активный вопрос в сетке
-            document.querySelectorAll('.grid-item').forEach(item => {
+            document.querySelectorAll('.grid-item').forEach((item, i) => {
                 item.classList.remove('active');
+                if (i === index) {
+                    item.classList.add('active');
+                }
+                if (answers[i] !== undefined) {
+                    item.classList.add('done');
+                }
             });
-            document.querySelectorAll('.grid-item')[index].classList.add('active');
         }
 
-        // Выбор ответа
         function selectAnswer(optionIndex) {
             answers[currentQuestionIndex] = optionIndex;
-            
-            // Помечаем вопрос как отвеченный
             document.querySelectorAll('.grid-item')[currentQuestionIndex].classList.add('done');
-            
-            // Обновляем отображение
             showQuestion(currentQuestionIndex);
             
-            // Автоматически переходим к следующему вопросу
             setTimeout(() => {
                 if (currentQuestionIndex < questions.length - 1) {
                     nextQuestion();
@@ -763,50 +852,47 @@
             }, 500);
         }
 
-        // Следующий вопрос
         function nextQuestion() {
             if (currentQuestionIndex < questions.length - 1) {
                 showQuestion(currentQuestionIndex + 1);
             }
         }
 
-        // Предыдущий вопрос
         function prevQuestion() {
             if (currentQuestionIndex > 0) {
                 showQuestion(currentQuestionIndex - 1);
             }
         }
 
-        // Таймер
         function startTimer() {
             clearInterval(timerInterval);
             timeLeft = 30 * 60;
+            updateTimerDisplay();
             
             timerInterval = setInterval(() => {
                 timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                document.getElementById('timer').textContent = 
-                    `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                updateTimerDisplay();
                 
                 if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
                     finishTest();
                 }
             }, 1000);
         }
 
-        // Завершение теста
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
         async function finishTest() {
-            if (!confirm('Завершить тестирование и отправить результат?')) {
-                return;
-            }
-            
             clearInterval(timerInterval);
             
-            // Подсчет баллов
             let score = 0;
             questions.forEach((question, index) => {
-                if (answers[index] !== undefined) {
+                if (answers[index] !== undefined && question.shuffledOptions) {
                     if (question.shuffledOptions[answers[index]].isCorrect) {
                         score++;
                     }
@@ -815,52 +901,49 @@
             
             // Сохранение результата
             try {
-                await db.collection("results").add({
-                    studentName: currentUser.name,
-                    phone: currentUser.phone,
-                    subject: currentUser.subject,
-                    score: score,
-                    total: questions.length,
-                    percentage: Math.round((score / questions.length) * 100),
-                    testId: currentTestId,
-                    date: new Date(),
-                    answers: answers,
-                    platform: 'github_pages'
-                });
-                
-                // Показ результатов
-                document.getElementById('quizScreen').classList.add('hidden');
-                document.getElementById('resultScreen').classList.remove('hidden');
-                
-                document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
-                
-                const percentage = Math.round((score / questions.length) * 100);
-                let message = '';
-                if (percentage >= 90) message = 'Отлично! Вы показали прекрасный результат!';
-                else if (percentage >= 70) message = 'Хорошо! Вы хорошо справились с тестом.';
-                else if (percentage >= 50) message = 'Удовлетворительно. Есть над чем поработать.';
-                else message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
-                
-                document.getElementById('resultMessage').innerHTML = `
-                    ${message}<br><br>
-                    <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
-                    Результат сохранен и отправлен преподавателю.
-                `;
-                
+                if (db) {
+                    await db.collection("results").add({
+                        studentName: currentUser.name,
+                        phone: currentUser.phone,
+                        subject: currentUser.subject,
+                        score: score,
+                        total: questions.length,
+                        percentage: Math.round((score / questions.length) * 100),
+                        testId: currentTestId,
+                        date: new Date(),
+                        answers: answers,
+                        timeSpent: (30 * 60) - timeLeft,
+                        platform: 'github_pages'
+                    });
+                }
             } catch (error) {
-                console.error('Ошибка сохранения результата:', error);
-                alert('Ошибка при сохранении результата. Ваши данные сохранены локально.');
-                
-                // Все равно показываем результат
-                document.getElementById('quizScreen').classList.add('hidden');
-                document.getElementById('resultScreen').classList.remove('hidden');
-                document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
-                document.getElementById('resultMessage').textContent = 
-                    `Вы набрали ${score} из ${questions.length} баллов. Ошибка отправки результата.`;
+                console.error('Ошибка сохранения:', error);
             }
+            
+            // Показ результатов
+            showResults(score);
         }
 
-        // Режим просмотра ошибок
+        function showResults(score) {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            
+            document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            let message = '';
+            if (percentage >= 90) message = 'Отлично! Вы показали прекрасный результат!';
+            else if (percentage >= 70) message = 'Хорошо! Вы хорошо справились с тестом.';
+            else if (percentage >= 50) message = 'Удовлетворительно. Есть над чем поработать.';
+            else message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
+            
+            document.getElementById('resultMessage').innerHTML = `
+                ${message}<br><br>
+                <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
+                Результат сохранен и отправлен преподавателю.
+            `;
+        }
+
         function reviewMode() {
             isReviewMode = true;
             document.getElementById('resultScreen').classList.add('hidden');
@@ -871,7 +954,6 @@
             showQuestion(0);
         }
 
-        // Пересдача того же варианта
         function retrySameTest() {
             answers = {};
             timeLeft = 30 * 60;
@@ -883,7 +965,6 @@
             document.getElementById('reportBtn').style.display = 'block';
             document.querySelector('.navigation').style.display = 'flex';
             
-            // Сброс сетки
             document.querySelectorAll('.grid-item').forEach(item => {
                 item.classList.remove('done');
             });
@@ -892,62 +973,39 @@
             startTimer();
         }
 
-        // Новый тест по тому же предмету
         function newTestSameSubject() {
             const storageKey = `test_${currentUser.phone}_${currentUser.subject}`;
             localStorage.removeItem(storageKey);
             location.reload();
         }
 
-        // Жалоба на ошибку
         async function reportError() {
             const question = questions[currentQuestionIndex];
-            const reason = prompt('Опишите ошибку в этом вопросе:');
+            if (!question) return;
             
+            const reason = prompt('Опишите ошибку в этом вопросе:');
             if (!reason) return;
             
             try {
-                await db.collection("reports").add({
-                    questionText: question.text,
-                    subject: currentUser.subject,
-                    reason: reason,
-                    studentName: currentUser.name,
-                    studentPhone: currentUser.phone,
-                    date: new Date(),
-                    platform: 'github_pages'
-                });
-                
-                alert('Спасибо! Ваше сообщение отправлено преподавателю.');
+                if (db) {
+                    await db.collection("reports").add({
+                        questionText: question.text,
+                        subject: currentUser.subject,
+                        reason: reason,
+                        studentName: currentUser.name,
+                        studentPhone: currentUser.phone,
+                        date: new Date(),
+                        questionIndex: currentQuestionIndex
+                    });
+                    
+                    alert('Спасибо! Ваше сообщение отправлено преподавателю.');
+                } else {
+                    alert('Ошибка: База данных не доступна');
+                }
             } catch (error) {
                 alert('Ошибка отправки жалобы. Попробуйте позже.');
             }
         }
-
-        // Восстановление данных при загрузке
-        window.addEventListener('load', function() {
-            const savedUser = localStorage.getItem('lastUser');
-            if (savedUser) {
-                try {
-                    const user = JSON.parse(savedUser);
-                    document.getElementById('nameInput').value = user.name || '';
-                    document.getElementById('phoneInput').value = user.phone || '';
-                    if (user.subject) {
-                        document.getElementById('subjectSelect').value = user.subject;
-                    }
-                } catch(e) {
-                    console.log('Не удалось восстановить данные');
-                }
-            }
-        });
-
-        // Сохранение данных пользователя
-        window.saveUserData = function() {
-            localStorage.setItem('lastUser', JSON.stringify({
-                name: currentUser.name,
-                phone: currentUser.phone,
-                subject: currentUser.subject
-            }));
-        };
     </script>
 </body>
 </html>

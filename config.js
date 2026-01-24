@@ -1,4 +1,3 @@
-// config.js - ОДИНАКОВЫЙ для локального админа и сайта
 const firebaseConfig = {
     apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
     authDomain: "test-by-samirshokh.firebaseapp.com",
@@ -9,10 +8,3 @@ const firebaseConfig = {
 };
 
 window.firebaseConfig = firebaseConfig;
-
-// Инициализация Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-// Создаем глобальную переменную db
-const db = firebase.firestore();
