@@ -230,6 +230,7 @@ display: flex;
 flex-direction: column;
 }
 
+/* --- ИСПРАВЛЕНО: Стили текста вопроса --- */
 .question-text {
 font-size: 16px;
 line-height: 1.5;
@@ -239,9 +240,10 @@ background: #f8fafc;
 padding: 15px;
 border-radius: 10px;
 border-left: 4px solid var(--primary);
+/* Новые свойства для фикса отображения: */
 word-break: break-word;
 overflow-wrap: break-word;
-white-space: normal;
+white-space: pre-wrap; /* Сохраняет переносы строк и пробелы */
 max-height: none;
 overflow: visible;
 flex-shrink: 0;
@@ -257,23 +259,24 @@ padding-right: 5px;
 max-height: 350px;
 }
 
+/* --- ИСПРАВЛЕНО: Стили вариантов ответа --- */
 .option {
 padding: 15px;
 background: white;
 border: 2px solid #e5e7eb;
 border-radius: 10px;
-text-align: left;
 font-size: 14px;
 cursor: pointer;
 transition: all 0.2s;
-word-break: break-word;
-overflow-wrap: break-word;
-white-space: normal;
 line-height: 1.4;
 min-height: 60px;
+/* Новые свойства для выравнивания текста: */
 display: flex;
-align-items: center;
-text-align: left;
+align-items: flex-start; /* Текст начинается сверху */
+text-align: left;        /* Текст по левому краю */
+white-space: pre-wrap;   /* Сохраняет структуру текста */
+word-break: break-word;
+overflow-wrap: break-word;
 }
 
 .option:hover {
@@ -621,6 +624,14 @@ let db = null;
 let currentSessionId = null;
 let deviceId = null;
 
+// --- ИСПРАВЛЕНИЕ: Функция для очистки текста от мусора (====) ---
+function cleanText(text) {
+    if (!text) return "";
+    let str = text.toString();
+    // Удаляем длинные знаки равенства и лишние пробелы
+    return str.replace(/={3,}/g, '').trim();
+}
+
 // Инициализация Firebase
 function initFirebase() {
 if (typeof firebase !== 'undefined' && window.firebaseConfig) {
@@ -927,11 +938,15 @@ return;
 
 snapshot.forEach(doc => {
 let q = doc.data();
-let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
+// --- ИСПРАВЛЕНИЕ: Очистка текста опций от мусора ---
+let opts = q.options.map((text, idx) => ({ 
+    text: cleanText(text), 
+    isCorrect: idx === q.correct 
+}));
 opts.sort(() => Math.random() - 0.5);
 
 dbQuestions.push({
-text: q.text,
+text: cleanText(q.text), // --- ИСПРАВЛЕНИЕ: Очистка текста вопроса ---
 shuffledOptions: opts,
 correctIndex: opts.findIndex(o => o.isCorrect)
 });
