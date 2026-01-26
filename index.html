@@ -1,1295 +1,846 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RIMUS — Your Session Assistant</title>
-<link rel="icon" type="image/png" href="https://i.imgur.com/8X8Zg1y.png">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-:root {
-    --primary: #0A1F35;    /* Темно-синий из фона логотипа */
-    --success: #00A651;    /* Зеленый из буквы "i" */
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --bg: #f8fafc;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="RIMUS - Advanced Testing System for Medical Students">
+    <meta name="author" content="Samir Kh">
+    <title>RIMUS — Your Session Assistant | Final Version 4.2</title>
+    
+    <link rel="icon" type="image/png" href="https://i.imgur.com/8X8Zg1y.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
+    <style>
+        /* ================================================================
+           ПОЛНЫЙ БЛОК СТИЛЕЙ (CSS) - ВЕРСИЯ 4.2
+           ================================================================
+        */
+        :root {
+            --primary-dark: #0A1F35;    /* Основной темно-синий */
+            --primary-light: #1e293b;
+            --accent-green: #00A651;   /* Зеленый из логотипа */
+            --accent-green-hover: #008f45;
+            --danger-red: #ef4444;
+            --warning-amber: #f59e0b;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-ui: #e2e8f0;
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-body {
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-min-height: 100vh;
-display: flex;
-justify-content: center;
-align-items: center;
-padding: 15px;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-.container {
-width: 100%;
-max-width: 500px;
-}
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
 
-.card {
-background: white;
-border-radius: 20px;
-box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-overflow: hidden;
-animation: slideUp 0.5s ease;
-}
+        .main-wrapper {
+            width: 100%;
+            max-width: 550px;
+            z-index: 10;
+        }
 
-@keyframes slideUp {
-from { transform: translateY(30px); opacity: 0; }
-to { transform: translateY(0); opacity: 1; }
-}
+        /* АНИМАЦИИ КАРТОЧЕК */
+        .card-component {
+            background: var(--card-bg);
+            border-radius: 28px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            position: relative;
+            animation: appAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-.header {
-background: var(--primary);
-color: white;
-padding: 25px;
-text-align: center;
-}
+        @keyframes appAppear {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
 
-.header h1 {
-font-size: 24px;
-margin-bottom: 8px;
-}
+        /* HEADER */
+        .app-header {
+            background: var(--primary-dark);
+            padding: 45px 30px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
 
-.header p {
-opacity: 0.9;
-font-size: 14px;
-}
+        .logo-img {
+            height: 110px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            transition: var(--transition-smooth);
+        }
 
-.content {
-padding: 25px;
-}
+        .logo-img:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
 
-.form-group {
-margin-bottom: 18px;
-}
+        .app-header h1 {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
 
-.form-group label {
-display: block;
-margin-bottom: 6px;
-color: #374151;
-font-weight: 600;
-font-size: 13px;
-}
+        .app-header p {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
 
-.form-control {
-width: 100%;
-padding: 12px 14px;
-border: 2px solid #e5e7eb;
-border-radius: 10px;
-font-size: 15px;
-transition: all 0.3s;
-}
+        /* CONTENT AREA */
+        .app-body { padding: 35px; }
 
-.form-control:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
+        .input-group { margin-bottom: 24px; position: relative; }
 
-.btn {
-width: 100%;
-padding: 14px;
-background: var(--success);
-color: white;
-border: none;
-border-radius: 10px;
-font-size: 16px;
-font-weight: 600;
-cursor: pointer;
-transition: all 0.3s;
-display: flex;
-justify-content: center;
-align-items: center;
-gap: 8px;
-}
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-.btn:hover {
-background: #4338ca;
-transform: translateY(-2px);
-box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-}
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 42px;
+            color: var(--text-muted);
+        }
 
-.btn:active {
-transform: translateY(0);
-}
+        .form-input {
+            width: 100%;
+            padding: 16px 16px 16px 45px;
+            border: 2px solid var(--border-ui);
+            border-radius: 16px;
+            font-size: 16px;
+            color: var(--text-main);
+            transition: var(--transition-smooth);
+            background: #f8fafc;
+        }
 
-.btn-success {
-background: var(--success);
-}
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-dark);
+            background: white;
+            box-shadow: 0 0 0 5px rgba(10, 31, 53, 0.1);
+        }
 
-.btn-success:hover {
-background: #0da271;
-}
+        /* BUTTONS */
+        .btn-action {
+            width: 100%;
+            padding: 18px;
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 20px -6px rgba(0, 166, 81, 0.4);
+        }
 
-.btn-warning {
-background: var(--warning);
-}
+        .btn-action:hover {
+            background: var(--accent-green-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px -8px rgba(0, 166, 81, 0.6);
+        }
 
-.btn-warning:hover {
-background: #d97706;
-}
+        .btn-action:active { transform: translateY(0); }
 
-.btn-danger {
-background: var(--danger);
-}
+        /* QUIZ ENGINE STYLES */
+        .quiz-status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--border-ui);
+        }
 
-.btn-danger:hover {
-background: #dc2626;
-}
+        .timer-badge {
+            background: var(--danger-red);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-.hidden {
-display: none !important;
-}
+        .progress-text {
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 15px;
+        }
 
-.quiz-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px;
-background: #f9fafb;
-border-bottom: 1px solid #e5e7eb;
-}
+        .question-navigator {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background: #f8fafc;
+        }
 
-.timer {
-background: var(--danger);
-color: white;
-padding: 6px 12px;
-border-radius: 15px;
-font-weight: bold;
-font-size: 14px;
-white-space: nowrap;
-}
+        .nav-dot {
+            height: 40px;
+            background: white;
+            border: 2px solid var(--border-ui);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
 
-.question-counter {
-font-size: 14px;
-color: #6b7280;
-font-weight: 600;
-}
+        .nav-dot.current { border-color: var(--primary-dark); background: var(--primary-dark); color: white; scale: 1.1; }
+        .nav-dot.completed { background: var(--accent-green); color: white; border-color: var(--accent-green); }
 
-.question-grid {
-display: grid;
-grid-template-columns: repeat(5, 1fr);
-gap: 6px;
-padding: 15px;
-background: #f9fafb;
-}
+        .question-box { padding: 30px; min-height: 450px; }
 
-.grid-item {
-height: 35px;
-min-width: 35px;
-background: white;
-border: 2px solid #e5e7eb;
-border-radius: 8px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-weight: 600;
-font-size: 12px;
-cursor: pointer;
-transition: all 0.2s;
-}
+        .question-title {
+            font-size: 18px;
+            line-height: 1.7;
+            color: var(--text-main);
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 20px;
+            border-left: 6px solid var(--primary-dark);
+            font-weight: 600;
+        }
 
-.grid-item:hover {
-border-color: var(--primary);
-transform: scale(1.05);
-}
+        .options-list { display: flex; flex-direction: column; gap: 14px; }
 
-.grid-item.active {
-border-color: var(--primary);
-background: var(--primary);
-color: white;
-}
+        .option-item {
+            padding: 18px 24px;
+            border: 2px solid var(--border-ui);
+            border-radius: 18px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            line-height: 1.5;
+        }
 
-.grid-item.done {
-background: var(--success);
-color: white;
-border-color: var(--success);
-}
+        .option-item:hover {
+            border-color: var(--primary-dark);
+            background: #f0f4ff;
+        }
 
-.question-content {
-padding: 20px;
-display: flex;
-flex-direction: column;
-min-height: 400px;
-}
+        .option-item.selected {
+            background: var(--primary-dark);
+            color: white;
+            border-color: var(--primary-dark);
+        }
 
-.question-container {
-flex: 1;
-display: flex;
-flex-direction: column;
-}
+        .option-item.correct-ans { background: #dcfce7; border-color: #22c55e; color: #166534; font-weight: 700; }
+        .option-item.wrong-ans { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
 
-/* --- ИСПРАВЛЕНО: Стили текста вопроса --- */
-.question-text {
-font-size: 16px;
-line-height: 1.5;
-margin-bottom: 20px;
-color: #1f2937;
-background: #f8fafc;
-padding: 15px;
-border-radius: 10px;
-border-left: 4px solid var(--primary);
-/* Новые свойства для фикса отображения: */
-word-break: break-word;
-overflow-wrap: break-word;
-white-space: pre-wrap; /* Сохраняет переносы строк и пробелы */
-max-height: none;
-overflow: visible;
-flex-shrink: 0;
-}
+        .nav-footer {
+            display: flex;
+            gap: 15px;
+            padding: 25px 35px;
+            border-top: 1px solid var(--border-ui);
+        }
 
-.options-container {
-display: flex;
-flex-direction: column;
-gap: 10px;
-flex: 1;
-overflow-y: auto;
-padding-right: 5px;
-max-height: 350px;
-}
+        /* RESULT SCREEN */
+        .result-container { text-align: center; padding: 50px 30px; }
+        .circle-score {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            background: var(--primary-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 35px rgba(10, 31, 53, 0.3);
+        }
+        .circle-score span { font-size: 56px; font-weight: 900; }
+        .circle-score small { font-size: 14px; opacity: 0.7; }
 
-/* --- ИСПРАВЛЕНО: Стили вариантов ответа --- */
-.option {
-padding: 15px;
-background: white;
-border: 2px solid #e5e7eb;
-border-radius: 10px;
-font-size: 14px;
-cursor: pointer;
-transition: all 0.2s;
-line-height: 1.4;
-min-height: 60px;
-/* Новые свойства для выравнивания текста: */
-display: flex;
-align-items: flex-start; /* Текст начинается сверху */
-text-align: left;        /* Текст по левому краю */
-white-space: pre-wrap;   /* Сохраняет структуру текста */
-word-break: break-word;
-overflow-wrap: break-word;
-}
+        /* MODALS & ERRORS */
+        .alert-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+            border: 1px solid #fecaca;
+        }
 
-.option:hover {
-border-color: var(--primary);
-background: #f5f3ff;
-}
+        .hidden { display: none !important; }
 
-.option.selected {
-background: var(--primary);
-color: white;
-border-color: var(--primary);
-}
-
-.option.correct {
-background: #d1fae5;
-border-color: var(--success);
-color: #065f46;
-}
-
-.option.wrong {
-background: #fee2e2;
-border-color: var(--danger);
-color: #991b1b;
-}
-
-.options-container::-webkit-scrollbar {
-width: 6px;
-}
-
-.options-container::-webkit-scrollbar-track {
-background: #f1f1f1;
-border-radius: 3px;
-}
-
-.options-container::-webkit-scrollbar-thumb {
-background: #c1c1c1;
-border-radius: 3px;
-}
-
-.options-container::-webkit-scrollbar-thumb:hover {
-background: #a1a1a1;
-}
-
-.navigation {
-display: flex;
-gap: 10px;
-padding: 15px;
-background: #f9fafb;
-border-top: 1px solid #e5e7eb;
-}
-
-.navigation .btn {
-flex: 1;
-padding: 12px;
-font-size: 14px;
-}
-
-.result-screen {
-text-align: center;
-padding: 30px 20px;
-}
-
-.result-score {
-font-size: 60px;
-font-weight: 800;
-color: var(--primary);
-margin: 15px 0;
-line-height: 1;
-}
-
-.result-message {
-font-size: 16px;
-color: #6b7280;
-margin-bottom: 25px;
-line-height: 1.5;
-}
-
-.result-actions {
-display: flex;
-flex-direction: column;
-gap: 12px;
-}
-
-.dev-link {
-display: block;
-text-align: center;
-margin-top: 20px;
-color: #9ca3af;
-font-size: 12px;
-text-decoration: none;
-}
-
-.dev-link:hover {
-color: var(--primary);
-}
-
-.report-btn {
-background: none;
-border: none;
-color: #94a3b8;
-font-size: 12px;
-cursor: pointer;
-text-decoration: underline;
-margin-top: 15px;
-padding: 8px;
-align-self: flex-start;
-}
-
-.report-btn:hover {
-color: var(--danger);
-}
-
-.error-message {
-background: #fee2e2;
-border: 1px solid #fecaca;
-color: #991b1b;
-padding: 12px;
-border-radius: 8px;
-margin-bottom: 15px;
-font-size: 14px;
-display: none;
-}
-
-.error-message.show {
-display: block;
-}
-
-.access-info {
-font-size: 12px;
-color: #6b7280;
-text-align: center;
-margin-top: 15px;
-padding: 10px;
-background: #f9fafb;
-border-radius: 8px;
-}
-
-@media (max-width: 480px) {
-.question-grid {
-grid-template-columns: repeat(5, 1fr);
-}
-
-.grid-item {
-height: 32px;
-min-width: 32px;
-font-size: 11px;
-}
-
-.question-text {
-font-size: 15px;
-}
-
-.option {
-font-size: 13px;
-min-height: 55px;
-}
-}
-
-@media (max-width: 360px) {
-.question-grid {
-grid-template-columns: repeat(4, 1fr);
-}
-
-.grid-item {
-height: 30px;
-min-width: 30px;
-font-size: 10px;
-}
-}
-</style>
+        /* RESPONSIVE */
+        @media (max-width: 500px) {
+            .app-body { padding: 25px; }
+            .logo-img { height: 90px; }
+            .app-header h1 { font-size: 28px; }
+            .question-navigator { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+            .nav-dot { height: 35px; font-size: 12px; }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-<div id="loginScreen" class="card">
-<div class="header" style="background: #0A1F35; padding: 40px 25px;">
-<img src="https://i.imgur.com/8X8Zg1y.png" alt="RIMUS" style="height: 100px; margin-bottom: 15px;">
-<h1 style="letter-spacing: 3px; font-size: 32px; margin-bottom: 5px;">RIMUS</h1>
-<p style="font-weight: 600; opacity: 0.9; letter-spacing: 1px;">YOUR PERSONAL SESSION ASSISTANT</p>
-<p style="font-size: 12px; margin-top: 8px; color: #00A651; font-weight: bold;">by Samir Kh</p>
-</div>
-<div class="content">
-<div id="loginError" class="error-message"></div>
-
-<div class="form-group">
-<label for="loginInput"><i class="fas fa-key"></i> Логин для входа</label>
-<input type="text" id="loginInput" class="form-control"
-placeholder="Введите ваш логин"
-autocomplete="off"
-autocapitalize="off"
-spellcheck="false">
-</div>
-
-<div class="form-group">
-<label for="nameInput"><i class="fas fa-user"></i> Ваше имя</label>
-<input type="text" id="nameInput" class="form-control"
-placeholder="Иванов Иван"
-autocomplete="off">
-</div>
-
-<div class="form-group">
-<label for="subjectSelect"><i class="fas fa-book"></i> Предмет тестирования</label>
-<select id="subjectSelect" class="form-control">
-<option value="">-- Выберите предмет --</option>
-<option value="anatomy">Анатомия</option>
-<option value="biology">Биология</option>
-<option value="chemistry">Химия</option>
-<option value="physics">Физика</option>
-<option value="history">История</option>
-<option value="english">Английский язык</option>
-<option value="latin">Латинский язык</option>
-<option value="medical">Медицинская профессия</option>
-<option value="uzbek">Узбекский язык</option>
-<option value="histology">Гистология</option>
-<option value="philosophy">Философия</option>
-</select>
-</div>
-
-<button class="btn" onclick="tryLogin(event)">
-<i class="fas fa-sign-in-alt"></i> Войти и начать тест
-</button>
-
-<div class="access-info">
-<i class="fas fa-info-circle"></i>
-Доступ только для авторизованных пользователей.
-Логин предоставляет администратор.
-</div>
-
-<a href="https://t.me/rimus_connect_bot" class="dev-link" target="_blank">
-<i class="fas fa-question-circle"></i> Техническая поддержка
-</a>
-</div>
-</div>
-<div id="blockedScreen" class="card hidden">
-<div class="header" style="background: var(--danger);">
-<h1> ⛔   Доступ   ограничен </h1>
-<p>Обнаружена попытка входа с другого устройства</p>
-</div>
-<div class="content">
-<div style="text-align: center; padding: 30px 0;">
-<i class="fas fa-lock" style="font-size: 60px; color: var(--danger); margin-bottom: 20px;"></i>
-<h3 style="margin-bottom: 15px; color: var(--danger);">Доступ уже активен на другом устройстве</h3>
-<p style="margin-bottom: 20px; color: #6b7280;">
-Вы не можете войти с этого устройства, так как ваш аккаунт уже используется.
-</p>
-<p style="margin-bottom: 30px; color: #6b7280;">
-Если это ошибка, обратитесь к администратору для сброса доступа.
-</p>
-
-<button class="btn" onclick="location.reload()">
-<i class="fas fa-redo"></i> Попробовать снова
-</button>
-</div>
-</div>
-</div>
-<div id="quizScreen" class="card hidden">
-<div class="quiz-header">
-<div class="timer" id="timer">30:00</div>
-<div class="question-counter" id="qCounter">1 / 30</div>
-</div>
-
-<div class="question-grid" id="qGrid"></div>
-
-<div class="question-content">
-<div class="question-container">
-<div class="question-text" id="qText"></div>
-<div class="options-container" id="optionsArea"></div>
-</div>
-
-<button id="reportBtn" class="report-btn" onclick="reportError()">
-<i class="fas fa-exclamation-triangle"></i> Сообщить об ошибке
-</button>
-</div>
-
-<div class="navigation" id="quizNav">
-<button class="btn" style="background: #9ca3af;" onclick="prevQuestion()">
-<i class="fas fa-arrow-left"></i> Назад
-</button>
-<button class="btn" onclick="nextQuestion()">
-Дальше <i class="fas fa-arrow-right"></i>
-</button>
-</div>
-
-<button id="finishBtn" class="btn btn-success" style="margin: 15px; border-radius: 10px;" onclick="finishTest()">
-<i class="fas fa-flag-checkered"></i> Завершить тест
-</button>
-
-<button id="backToMenuBtn" class="btn btn-warning hidden" style="margin: 15px; border-radius: 10px;" onclick="returnToResults()">
-<i class="fas fa-undo"></i> Вернуться в меню результатов
-</button>
-</div>
-<div id="resultScreen" class="card hidden">
-<div class="header">
-<h1> 🎉  Результаты теста</h1>
-<p>Тестирование завершено</p>
-</div>
-
-<div class="result-screen">
-<div class="result-score" id="scoreDisplay">0</div>
-<div class="result-message" id="resultMessage"></div>
-
-<div class="result-actions">
-<button class="btn" style="background: #6b7280;" onclick="reviewMode()">
-<i class="fas fa-glasses"></i> Анализ ошибок
-</button>
-
-<button class="btn btn-success" onclick="retrySameTest()">
-<i class="fas fa-redo"></i> Решить этот вариант заново
-</button>
-
-<button class="btn btn-warning" onclick="startNewRandomTest()">
-<i class="fas fa-random"></i> Новый тест (другие вопросы)
-</button>
-
-<button class="btn btn-danger" onclick="logout()">
-<i class="fas fa-sign-out-alt"></i> Завершить сеанс
-</button>
-</div>
-</div>
-</div>
-</div>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-<script>
-window.firebaseConfig = {
-apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
-authDomain: "test-by-samirshokh.firebaseapp.com",
-projectId: "test-by-samirshokh",
-storageBucket: "test-by-samirshokh.firebasestorage.app",
-messagingSenderId: "105940641906",
-appId: "1:105940641906:web:effee678673ae954b53aeb"
-};
-</script>
-<script>
-// Глобальные переменные
-let questions = [];
-let answers = {};
-let currentQuestionIndex = 0;
-let timeLeft = 30 * 60;
-let timerInterval;
-let currentUser = {};
-let isReviewMode = false;
-let currentTestId = null;
-let db = null;
-let currentSessionId = null;
-let deviceId = null;
-
-// --- ИСПРАВЛЕНИЕ: Функция для очистки текста от мусора (====) ---
-function cleanText(text) {
-    if (!text) return "";
-    let str = text.toString();
-    // Удаляем длинные знаки равенства и лишние пробелы
-    return str.replace(/={3,}/g, '').trim();
-}
-
-// Инициализация Firebase
-function initFirebase() {
-if (typeof firebase !== 'undefined' && window.firebaseConfig) {
-try {
-firebase.initializeApp(window.firebaseConfig);
-db = firebase.firestore();
-console.log('Firebase успешно инициализирован');
-return true;
-} catch (error) {
-console.error('Ошибка инициализации Firebase:', error);
-return false;
-}
-}
-return false;
-}
-
-// Генерация уникального ID устройства
-function generateDeviceId() {
-const sources = [
-navigator.userAgent,
-navigator.platform,
-new Date().getTime(),
-Math.random().toString(36).substr(2, 9)
-];
-
-let hash = '';
-sources.forEach(source => {
-for(let i = 0; i < source.length; i++) {
-hash += source.charCodeAt(i).toString(36);
-}
-});
-
-return 'dev_' + hash.substr(0, 20);
-}
-
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-deviceId = localStorage.getItem('device_id') || generateDeviceId();
-localStorage.setItem('device_id', deviceId);
-
-console.log('Device ID:', deviceId);
-
-if (!initFirebase()) {
-showLoginError('Режим оффлайн. Некоторые функции могут быть недоступны.');
-}
-
-checkActiveSession();
-});
-
-// Проверка активной сессии
-function checkActiveSession() {
-const activeSession = localStorage.getItem('active_session');
-if (activeSession) {
-try {
-const session = JSON.parse(activeSession);
-const sessionTime = session.timestamp;
-const currentTime = new Date().getTime();
-const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
-
-if (hoursDiff < 12) {
-currentUser = session.user;
-currentTestId = session.testId;
-
-const savedQuestions = localStorage.getItem(`test_${session.user.login}_${session.user.subject}`);
-if (savedQuestions) {
-try {
-const parsed = JSON.parse(savedQuestions);
-questions = parsed.questions || [];
-answers = parsed.answers || {};
-
-document.getElementById('loginScreen').classList.add('hidden');
-document.getElementById('quizScreen').classList.remove('hidden');
-renderQuestionGrid();
-showQuestion(0);
-startTimer();
-console.log('Восстановлена активная сессия');
-return;
-} catch(e) {
-console.error('Ошибка восстановления сессии:', e);
-}
-}
-}
-} catch(e) {
-console.error('Ошибка проверки сессии:', e);
-}
-}
-
-clearExpiredSessions();
-}
-
-// Очистка просроченных сессий
-function clearExpiredSessions() {
-localStorage.removeItem('active_session');
-}
-
-// Показать ошибку входа
-function showLoginError(message) {
-const errorDiv = document.getElementById('loginError');
-errorDiv.textContent = message;
-errorDiv.classList.add('show');
-
-setTimeout(() => {
-errorDiv.classList.remove('show');
-}, 5000);
-}
-
-// Проверка логина в базе данных
-async function checkLoginAccess(login) {
-if (!db) {
-// Оффлайн режим
-const demoLogins = ['student123', 'user123', 'testuser'];
-if (demoLogins.includes(login)) {
-return { allowed: true, userData: { approved: true } };
-}
-return { allowed: false, reason: 'Логин не найден (оффлайн)' };
-}
-
-try {
-const userDoc = await db.collection("allowed_users").doc(login).get();
-
-if (userDoc.exists) {
-const userData = userDoc.data();
-
-if (!userData.approved) {
-return { allowed: false, reason: 'Доступ не разрешен администратором' };
-}
-
-if (userData.activeSession && userData.activeSession !== deviceId) {
-const sessionTime = userData.sessionTimestamp || 0;
-const currentTime = new Date().getTime();
-const hoursDiff = (currentTime - sessionTime) / (1000 * 60 * 60);
-
-if (hoursDiff < 12) {
-return {
-allowed: false,
-reason: 'Уже используется на другом устройстве',
-userData: userData
-};
-}
-}
-
-return {
-allowed: true,
-userData: userData
-};
-}
-
-return { allowed: false, reason: 'Логин не найден' };
-} catch (error) {
-console.error('Ошибка проверки логина:', error);
-return { allowed: false, reason: 'Ошибка соединения' };
-}
-}
-
-// Обновление информации о сессии
-async function updateSessionInfo(login, startSession = true) {
-if (!db) return;
-
-try {
-const updateData = {
-lastLogin: new Date(),
-lastDevice: deviceId
-};
-
-if (startSession) {
-updateData.activeSession = deviceId;
-updateData.sessionTimestamp = new Date().getTime();
-} else {
-updateData.activeSession = null;
-updateData.sessionTimestamp = null;
-}
-
-await db.collection("allowed_users").doc(login).update(updateData);
-return true;
-} catch (error) {
-console.error('Ошибка обновления сессии:', error);
-return false;
-}
-}
-
-// Функция входа
-async function tryLogin(event) {
-event.preventDefault();
-console.log(" 🟢  ПОПЫТКА ВХОДА");
-
-const login = document.getElementById('loginInput').value.trim();
-const name = document.getElementById('nameInput').value.trim();
-const subject = document.getElementById('subjectSelect').value;
-const btn = event.currentTarget;
-
-if (!login || login.length < 3) {
-showLoginError('Логин должен содержать минимум 3 символа');
-return;
-}
-
-if (!name) {
-showLoginError('Введите ваше имя');
-return;
-}
-
-if (!subject) {
-showLoginError('Выберите предмет для тестирования');
-return;
-}
-
-btn.disabled = true;
-const originalText = btn.innerHTML;
-btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Проверка доступа...';
-
-try {
-const accessCheck = await checkLoginAccess(login);
-
-if (!accessCheck.allowed) {
-if (accessCheck.reason === 'Уже используется на другом устройстве') {
-document.getElementById('loginScreen').classList.add('hidden');
-document.getElementById('blockedScreen').classList.remove('hidden');
-} else {
-showLoginError(`Доступ запрещен: ${accessCheck.reason || 'логин не найден'}`);
-}
-btn.disabled = false;
-btn.innerHTML = originalText;
-return;
-}
-
-await updateSessionInfo(login, true);
-
-currentUser = {
-login: login,
-name: name,
-subject: subject,
-deviceId: deviceId
-};
-
-currentTestId = Date.now().toString(36);
-currentSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
-
-localStorage.setItem('active_session', JSON.stringify({
-user: currentUser,
-testId: currentTestId,
-sessionId: currentSessionId,
-timestamp: new Date().getTime()
-}));
-
-document.getElementById('loginScreen').classList.add('hidden');
-document.getElementById('quizScreen').classList.remove('hidden');
-
-await loadQuestions();
-renderQuestionGrid();
-showQuestion(0);
-startTimer();
-
-console.log(" 🟢  ТЕСТ ЗАПУЩЕН для пользователя:", login);
-
-} catch (error) {
-console.error('Ошибка при входе:', error);
-showLoginError('Ошибка при входе. Попробуйте еще раз.');
-btn.disabled = false;
-btn.innerHTML = originalText;
-}
-}
-
-// Загрузка вопросов (проверка сохраненных или генерация новых)
-async function loadQuestions() {
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-const savedTest = localStorage.getItem(storageKey);
-
-if (savedTest) {
-try {
-const parsed = JSON.parse(savedTest);
-const savedTime = parsed.timestamp;
-const currentTime = new Date().getTime();
-const hoursDiff = (currentTime - savedTime) / (1000 * 60 * 60);
-
-if (hoursDiff < 24 && parsed.questions && parsed.questions.length >= 1) {
-questions = parsed.questions;
-currentTestId = parsed.testId || currentTestId;
-console.log('Используем сохраненный тест из localStorage');
-return;
-}
-} catch(e) {
-console.log('Ошибка чтения сохраненного теста:', e);
-}
-}
-
-// Генерация вопросов с запросом к БД
-await generateQuestionsForSubject();
-console.log('Сгенерирован новый тест, вопросов:', questions.length);
-}
-
-// Генерация вопросов по предмету (СЛУЧАЙНЫЕ)
-async function generateQuestionsForSubject() {
-questions = [];
-let dbQuestions = [];
-
-try {
-const snapshot = await db.collection('questions')
-.where('subject', '==', currentUser.subject)
-.get();
-
-if (snapshot.empty) {
-alert('❌ ОШИБКА: В базе данных нет вопросов по предмету: ' + currentUser.subject);
-return;
-}
-
-snapshot.forEach(doc => {
-let q = doc.data();
-// --- ИСПРАВЛЕНИЕ: Очистка текста опций от мусора ---
-let opts = q.options.map((text, idx) => ({ 
-    text: cleanText(text), 
-    isCorrect: idx === q.correct 
-}));
-opts.sort(() => Math.random() - 0.5);
-
-dbQuestions.push({
-text: cleanText(q.text), // --- ИСПРАВЛЕНИЕ: Очистка текста вопроса ---
-shuffledOptions: opts,
-correctIndex: opts.findIndex(o => o.isCorrect)
-});
-});
-
-// КЛЮЧЕВОЙ МОМЕНТ: Тщательное перемешивание для нового теста
-questions = dbQuestions.sort(() => Math.random() - 0.5).slice(0, 30);
-
-// Сохраняем в память
-localStorage.setItem(`test_${currentUser.login}_${currentUser.subject}`, JSON.stringify({
-questions: questions,
-answers: {},
-testId: currentTestId,
-timestamp: new Date().getTime(),
-subject: currentUser.subject
-}));
-
-console.log("✅ Успешно загружено НОВЫХ случайных вопросов:", questions.length);
-
-} catch (e) {
-console.error('Ошибка загрузки:', e);
-}
-}
-
-// Рендеринг сетки вопросов
-function renderQuestionGrid() {
-const grid = document.getElementById('qGrid');
-grid.innerHTML = '';
-
-for (let i = 0; i < questions.length; i++) {
-const item = document.createElement('div');
-item.className = 'grid-item';
-item.textContent = i + 1;
-item.onclick = () => showQuestion(i);
-
-if (answers[i] !== undefined) {
-item.classList.add('done');
-}
-
-grid.appendChild(item);
-}
-}
-
-// Показать вопрос
-function showQuestion(index) {
-if (index < 0 || index >= questions.length) return;
-
-currentQuestionIndex = index;
-const question = questions[index];
-
-document.getElementById('qCounter').textContent = `${index + 1} / ${questions.length}`;
-document.getElementById('qText').textContent = question.text;
-
-const optionsArea = document.getElementById('optionsArea');
-optionsArea.innerHTML = '';
-
-question.shuffledOptions.forEach((option, optionIndex) => {
-const button = document.createElement('button');
-button.className = 'option';
-button.textContent = option.text;
-
-if (isReviewMode) {
-button.disabled = true; // Блокируем клики в режиме просмотра
-if (option.isCorrect) {
-button.classList.add('correct');
-}
-if (answers[index] === optionIndex && !option.isCorrect) {
-button.classList.add('wrong');
-}
-} else {
-if (answers[index] === optionIndex) {
-button.classList.add('selected');
-}
-button.onclick = () => selectAnswer(optionIndex);
-}
-
-optionsArea.appendChild(button);
-});
-
-document.querySelectorAll('.grid-item').forEach((item, i) => {
-item.classList.remove('active');
-item.classList.toggle('done', answers[i] !== undefined);
-
-if (i === index) {
-item.classList.add('active');
-}
-});
-}
-
-// Выбор ответа
-function selectAnswer(optionIndex) {
-if (isReviewMode) return;
-
-answers[currentQuestionIndex] = optionIndex;
-
-const gridItem = document.querySelector(`.grid-item:nth-child(${currentQuestionIndex + 1})`);
-if (gridItem) {
-gridItem.classList.add('done');
-}
-
-setTimeout(() => {
-if (currentQuestionIndex < questions.length - 1) {
-showQuestion(currentQuestionIndex + 1);
-}
-}, 500);
-}
-
-// Навигация
-function nextQuestion() {
-if (currentQuestionIndex < questions.length - 1) {
-showQuestion(currentQuestionIndex + 1);
-} else {
-// Если это последний вопрос, можно предложить завершить
-}
-}
-
-function prevQuestion() {
-if (currentQuestionIndex > 0) {
-showQuestion(currentQuestionIndex - 1);
-}
-}
-
-// Таймер
-function startTimer() {
-clearInterval(timerInterval);
-timeLeft = 30 * 60;
-
-updateTimerDisplay();
-
-timerInterval = setInterval(() => {
-timeLeft--;
-updateTimerDisplay();
-
-if (timeLeft <= 0) {
-clearInterval(timerInterval);
-finishTest();
-}
-}, 1000);
-}
-
-function updateTimerDisplay() {
-const minutes = Math.floor(timeLeft / 60);
-const seconds = timeLeft % 60;
-document.getElementById('timer').textContent =
-`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-}
-
-// Завершение теста
-async function finishTest() {
-clearInterval(timerInterval);
-
-let correctCount = 0;
-questions.forEach((question, index) => {
-if (answers[index] !== undefined) {
-if (question.shuffledOptions[answers[index]].isCorrect) {
-correctCount++;
-}
-}
-});
-
-await saveTestResults(correctCount);
-showResults(correctCount);
-}
-
-// Сохранение результатов
-async function saveTestResults(score) {
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-const testData = {
-questions: questions,
-answers: answers,
-score: score,
-testId: currentTestId,
-timestamp: new Date().getTime(),
-subject: currentUser.subject
-};
-
-localStorage.setItem(storageKey, JSON.stringify(testData));
-
-if (db && currentUser.login) {
-try {
-await db.collection("test_results").add({
-studentLogin: currentUser.login,
-studentName: currentUser.name,
-subject: currentUser.subject,
-score: score,
-total: questions.length,
-percentage: Math.round((score / questions.length) * 100),
-testId: currentTestId,
-deviceId: deviceId,
-date: new Date(),
-answers: answers,
-timeSpent: (30 * 60) - timeLeft
-});
-console.log('Результаты сохранены в Firebase');
-} catch (error) {
-console.error('Ошибка сохранения результатов:', error);
-}
-}
-}
-
-// Показать результаты
-function showResults(score) {
-document.getElementById('quizScreen').classList.add('hidden');
-document.getElementById('resultScreen').classList.remove('hidden');
-
-const percentage = Math.round((score / questions.length) * 100);
-document.getElementById('scoreDisplay').textContent = `${score}/${questions.length}`;
-
-let message = '';
-if (percentage >= 90) {
-message = 'Отлично! Вы показали прекрасный результат!';
-} else if (percentage >= 70) {
-message = 'Хорошо! Вы хорошо справились с тестом.';
-} else if (percentage >= 50) {
-message = 'Удовлетворительно. Есть над чем поработать.';
-} else {
-message = 'Попробуйте еще раз. Изучите материал и возвращайтесь!';
-}
-
-document.getElementById('resultMessage').innerHTML = `
-${message}<br><br>
-<strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
-Выберите действие ниже:
-`;
-}
-
-// ------------------------------------------------------------
-// НОВАЯ ЛОГИКА КНОПОК
-// ------------------------------------------------------------
-
-// 1. Режим просмотра ошибок
-function reviewMode() {
-isReviewMode = true;
-document.getElementById('resultScreen').classList.add('hidden');
-document.getElementById('quizScreen').classList.remove('hidden');
-
-// Скрываем кнопки прохождения теста, показываем кнопку возврата
-document.getElementById('finishBtn').classList.add('hidden');
-document.getElementById('backToMenuBtn').classList.remove('hidden');
-document.getElementById('reportBtn').classList.add('hidden');
-
-// Навигацию оставляем
-document.getElementById('quizNav').style.display = 'flex';
-
-showQuestion(0);
-}
-
-// Кнопка возврата из режима просмотра ошибок в меню результатов
-function returnToResults() {
-document.getElementById('quizScreen').classList.add('hidden');
-document.getElementById('resultScreen').classList.remove('hidden');
-}
-
-// 2. Пересдать ЭТОТ ЖЕ вариант (вопросы те же, ответы сброшены)
-function retrySameTest() {
-answers = {};
-timeLeft = 30 * 60;
-isReviewMode = false;
-
-document.getElementById('resultScreen').classList.add('hidden');
-document.getElementById('quizScreen').classList.remove('hidden');
-
-// Возвращаем стандартные кнопки
-document.getElementById('finishBtn').classList.remove('hidden');
-document.getElementById('backToMenuBtn').classList.add('hidden');
-document.getElementById('reportBtn').classList.remove('hidden');
-document.getElementById('quizNav').style.display = 'flex';
-
-renderQuestionGrid(); // Сбрасываем цвета в сетке
-showQuestion(0);
-startTimer();
-}
-
-// 3. НОВЫЙ тест по тому же предмету (НЕ выходит из аккаунта, генерирует НОВЫЕ вопросы)
-async function startNewRandomTest() {
-const btn = document.querySelector('.btn-warning');
-const oldText = btn.innerHTML;
-btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Генерация нового варианта...';
-btn.disabled = true;
-
-// 1. Очищаем сохраненный тест в памяти (чтобы loadQuestions не подтянул старый)
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
-localStorage.removeItem(storageKey);
-
-// 2. Сбрасываем переменные
-answers = {};
-currentQuestionIndex = 0;
-isReviewMode = false;
-currentTestId = Date.now().toString(36); // Новый ID теста
-
-// 3. Генерируем НОВЫЕ вопросы из БД (они там перемешиваются случайно)
-await generateQuestionsForSubject();
-
-// 4. Перезапускаем интерфейс
-document.getElementById('resultScreen').classList.add('hidden');
-document.getElementById('quizScreen').classList.remove('hidden');
-
-// Возвращаем кнопки в норму
-document.getElementById('finishBtn').classList.remove('hidden');
-document.getElementById('backToMenuBtn').classList.add('hidden');
-document.getElementById('reportBtn').classList.remove('hidden');
-
-// Восстанавливаем кнопку меню (на всякий случай)
-btn.innerHTML = oldText;
-btn.disabled = false;
-
-renderQuestionGrid();
-showQuestion(0);
-startTimer();
-}
-
-// 4. Полный выход из системы
-async function logout() {
-if(!confirm('Вы уверены, что хотите выйти из аккаунта?')) return;
-
-localStorage.removeItem('active_session');
-
-if (db && currentUser.login) {
-await updateSessionInfo(currentUser.login, false);
-}
-
-location.reload(); // Перезагружаем страницу, чтобы вернуться на логин
-}
-
-// Сообщить об ошибке
-function reportError() {
-const currentQuestion = questions[currentQuestionIndex];
-const errorMessage = `Сообщение об ошибке в вопросе ${currentQuestionIndex + 1}:\n\n${currentQuestion.text}\n\nОпишите ошибку:`;
-
-const userReport = prompt(errorMessage);
-if (userReport && userReport.trim() !== '') {
-alert('Спасибо за сообщение! Ошибка будет исправлена.');
-if (db) {
-db.collection("reports").add({
-questionText: currentQuestion.text,
-reason: userReport,
-student: currentUser.login,
-studentName: currentUser.name,
-date: new Date()
-});
-}
-}
-}
-</script>
+
+    <div class="main-wrapper">
+        <div id="loginSection" class="card-component">
+            <div class="app-header">
+                <img src="https://i.imgur.com/8X8Zg1y.png" alt="Logo" class="logo-img">
+                <h1>RIMUS</h1>
+                <p>Advanced Medical Testing System</p>
+            </div>
+            <div class="app-body">
+                <div id="authErrorMessage" class="alert-error"></div>
+                
+                <div class="input-group">
+                    <label>Персональный логин</label>
+                    <i class="fas fa-fingerprint"></i>
+                    <input type="text" id="userLogin" class="form-input" placeholder="Например: student_01">
+                </div>
+
+                <div class="input-group">
+                    <label>Ваше полное имя</label>
+                    <i class="fas fa-user-graduate"></i>
+                    <input type="text" id="userName" class="form-input" placeholder="Иванов Иван Иванович">
+                </div>
+
+                <div class="input-group">
+                    <label>Дисциплина</label>
+                    <i class="fas fa-microscope"></i>
+                    <select id="userSubject" class="form-input" style="padding-left: 45px;">
+                        <option value="">Выберите предмет...</option>
+                        <option value="physics">Медицинская физика</option>
+                        <option value="anatomy">Анатомия</option>
+                        <option value="biology">Биология</option>
+                        <option value="chemistry">Химия</option>
+                    </select>
+                </div>
+
+                <button class="btn-action" onclick="handleAuthAttempt(event)">
+                    <span>ВОЙТИ В СИСТЕМУ</span>
+                    <i class="fas fa-sign-in-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="blockSection" class="card-component hidden">
+            <div class="app-header" style="background: var(--danger-red);">
+                <i class="fas fa-shield-virus" style="font-size: 60px; margin-bottom: 20px;"></i>
+                <h1>ДОСТУП ЗАКРЫТ</h1>
+            </div>
+            <div class="app-body" style="text-align: center;">
+                <h3 style="margin-bottom: 15px; color: var(--danger-red);">Аккаунт используется!</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 30px;">
+                    Мы обнаружили, что этот логин уже активен на другом устройстве. Система RIMUS обеспечивает безопасность данных и предотвращает копирование тестов.
+                </p>
+                <button class="btn-action" style="background: var(--primary-dark);" onclick="location.reload()">
+                    ПОПРОБОВАТЬ СНОВА
+                </button>
+            </div>
+        </div>
+
+        <div id="quizSection" class="card-component hidden">
+            <div class="quiz-status-bar">
+                <div class="timer-badge">
+                    <i class="fas fa-clock"></i>
+                    <span id="displayTimer">30:00</span>
+                </div>
+                <div class="progress-text" id="questionProgress">Вопрос 1 / 30</div>
+            </div>
+
+            <div class="question-navigator" id="navGrid"></div>
+
+            <div class="question-box">
+                <div class="question-title" id="textQuestion">Загрузка данных из базы...</div>
+                <div class="options-list" id="optionsContainer"></div>
+                
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="hidden" id="reportIssueBtn" onclick="sendReport()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; text-decoration:underline; font-size:12px;">
+                        Сообщить об ошибке в вопросе
+                    </button>
+                </div>
+            </div>
+
+            <div class="nav-footer">
+                <button class="btn-action" style="background: #cbd5e1; color: #475569; box-shadow:none;" onclick="goBack()">
+                    <i class="fas fa-chevron-left"></i> Назад
+                </button>
+                <button class="btn-action" onclick="goForward()">
+                    Вперед <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div style="padding: 0 35px 35px;">
+                <button id="submitTestBtn" class="btn-action" style="background: var(--accent-green);" onclick="validateAndFinish()">
+                    <i class="fas fa-check-circle"></i> ЗАВЕРШИТЬ ТЕСТ
+                </button>
+                <button id="exitReviewBtn" class="btn-action hidden" style="background: var(--warning-amber);" onclick="closeReview()">
+                    ВЕРНУТЬСЯ К ИТОГАМ
+                </button>
+            </div>
+        </div>
+
+        <div id="resultSection" class="card-component hidden">
+            <div class="app-header">
+                <h1>ВАШ ИТОГ</h1>
+                <p>Данные успешно сохранены</p>
+            </div>
+            <div class="result-container">
+                <div class="circle-score">
+                    <span id="finalPoints">0</span>
+                    <small id="maxPoints">из 30</small>
+                </div>
+                <h2 id="resultTitle" style="margin-bottom: 10px;">Хорошая работа!</h2>
+                <p id="resultComment" style="color: var(--text-muted); margin-bottom: 40px;">Вы прошли тестирование.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="btn-action" style="background: var(--primary-dark);" onclick="startReview()">
+                        <i class="fas fa-search"></i> РАЗБОР ОШИБОК
+                    </button>
+                    <button class="btn-action" style="background: var(--accent-green);" onclick="restartCurrent()">
+                        <i class="fas fa-redo"></i> ПЕРЕСДАТЬ ВАРИАНТ
+                    </button>
+                    <button class="btn-action" style="background: var(--warning-amber);" onclick="newTest()">
+                        <i class="fas fa-random"></i> НОВЫЙ ВАРИАНТ
+                    </button>
+                    <button class="btn-action" style="background: #64748b;" onclick="exitApp()">
+                        <i class="fas fa-power-off"></i> ВЫЙТИ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        /**
+         * ================================================================
+         * RIMUS ENGINE CORE - JAVASCRIPT LOGIC
+         * ================================================================
+         */
+
+        const FIREBASE_SETTINGS = {
+            apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
+            authDomain: "test-by-samirshokh.firebaseapp.com",
+            projectId: "test-by-samirshokh",
+            storageBucket: "test-by-samirshokh.firebasestorage.app",
+            messagingSenderId: "105940641906",
+            appId: "1:105940641906:web:effee678673ae954b53aeb"
+        };
+
+        // Application State
+        let appState = {
+            db: null,
+            uid: null,
+            sessionUser: null,
+            testData: [],
+            userAnswers: {},
+            currentIndex: 0,
+            secondsLeft: 30 * 60,
+            timerClock: null,
+            reviewActive: false,
+            deviceToken: null
+        };
+
+        /**
+         * УМНАЯ ОЧИСТКА ТЕКСТА (RIMUS CLEANER)
+         * Удаляет системные символы из твоих документов (====, ++++, #)
+         */
+        function cleanTextFromDB(rawString) {
+            if (!rawString) return "";
+            // Удаляем решетки, знаки равно и плюсы (2 и более штук)
+            return rawString.toString()
+                .replace(/[=+]{2,}/g, ' ')
+                .replace(/#/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        /**
+         * Генерация уникального идентификатора устройства
+         */
+        function generateDeviceToken() {
+            let token = localStorage.getItem('rimus_v4_device_token');
+            if (!token) {
+                token = 'DEVICE-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                localStorage.setItem('rimus_v4_device_token', token);
+            }
+            return token;
+        }
+
+        // Инициализация системы
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("RIMUS Engine: Starting core services...");
+            appState.deviceToken = generateDeviceToken();
+
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(FIREBASE_SETTINGS);
+                appState.db = firebase.firestore();
+                console.log("Firebase: Connected.");
+            }
+
+            checkForExistingSession();
+        });
+
+        async function checkForExistingSession() {
+            const data = localStorage.getItem('rimus_active_session');
+            if (data) {
+                const session = JSON.parse(data);
+                // Сессия живет 12 часов
+                if (Date.now() - session.timestamp < 12 * 60 * 60 * 1000) {
+                    appState.sessionUser = session.user;
+                    const cache = localStorage.getItem(`cache_${appState.sessionUser.login}_${appState.sessionUser.subject}`);
+                    if (cache) {
+                        const parsed = JSON.parse(cache);
+                        appState.testData = parsed.questions;
+                        appState.userAnswers = parsed.answers || {};
+                        launchQuizUI();
+                    }
+                }
+            }
+        }
+
+        /**
+         * АУТЕНТИФИКАЦИЯ И ПРОВЕРКА БЛОКИРОВКИ
+         */
+        async function handleAuthAttempt(event) {
+            const btn = event.currentTarget;
+            const login = document.getElementById('userLogin').value.trim().toLowerCase();
+            const name = document.getElementById('userName').value.trim();
+            const subject = document.getElementById('userSubject').value;
+
+            if (!login || !name || !subject) {
+                return throwError("Все поля обязательны для заполнения!");
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> СВЯЗЬ С СЕРВЕРОМ...';
+
+            try {
+                const userDoc = await appState.db.collection("allowed_users").doc(login).get();
+
+                if (!userDoc.exists || !userDoc.data().approved) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>ВОЙТИ В СИСТЕМУ</span><i class="fas fa-sign-in-alt"></i>';
+                    return throwError("Логин не зарегистрирован или доступ заблокирован.");
+                }
+
+                const remoteData = userDoc.data();
+
+                // ПРОВЕРКА ДВОЙНОГО ВХОДА (БЛОКИРОВКА)
+                if (remoteData.activeSession && remoteData.activeSession !== appState.deviceToken) {
+                    const lastPulse = remoteData.sessionTimestamp || 0;
+                    if (Date.now() - lastPulse < 12 * 60 * 60 * 1000) {
+                        document.getElementById('loginSection').classList.add('hidden');
+                        document.getElementById('blockSection').classList.remove('hidden');
+                        return;
+                    }
+                }
+
+                // Обновляем сессию в БД
+                await appState.db.collection("allowed_users").doc(login).update({
+                    activeSession: appState.deviceToken,
+                    sessionTimestamp: Date.now(),
+                    lastSeen: new Date(),
+                    userName: name
+                });
+
+                appState.sessionUser = { login, name, subject };
+                localStorage.setItem('rimus_active_session', JSON.stringify({
+                    user: appState.sessionUser,
+                    timestamp: Date.now()
+                }));
+
+                await loadQuestionsBatch();
+                launchQuizUI();
+
+            } catch (err) {
+                console.error("Auth Error:", err);
+                btn.disabled = false;
+                btn.innerHTML = '<span>ВОЙТИ В СИСТЕМУ</span><i class="fas fa-sign-in-alt"></i>';
+                throwError("Ошибка сети. Проверьте подключение к интернету.");
+            }
+        }
+
+        async function loadQuestionsBatch() {
+            console.log("Loading questions for:", appState.sessionUser.subject);
+            const snapshot = await appState.db.collection('questions')
+                .where('subject', '==', appState.sessionUser.subject)
+                .get();
+
+            let pool = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                pool.push({
+                    id: doc.id,
+                    text: cleanTextFromDB(d.text),
+                    options: d.options.map((opt, i) => ({
+                        text: cleanTextFromDB(opt),
+                        isCorrect: i === d.correct
+                    }))
+                });
+            });
+
+            // Случайная выборка 30 вопросов и перемешивание ответов
+            appState.testData = pool.sort(() => Math.random() - 0.5).slice(0, 30);
+            appState.testData.forEach(q => q.options.sort(() => Math.random() - 0.5));
+
+            syncCache();
+        }
+
+        function syncCache() {
+            const key = `cache_${appState.sessionUser.login}_${appState.sessionUser.subject}`;
+            localStorage.setItem(key, JSON.stringify({
+                questions: appState.testData,
+                answers: appState.userAnswers
+            }));
+        }
+
+        /**
+         * QUIZ ENGINE
+         */
+        function launchQuizUI() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('quizSection').classList.remove('hidden');
+            
+            buildNavigationGrid();
+            displayQuestion(0);
+            startGlobalTimer();
+        }
+
+        function buildNavigationGrid() {
+            const grid = document.getElementById('navGrid');
+            grid.innerHTML = '';
+            appState.testData.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'nav-dot';
+                if (appState.userAnswers[i] !== undefined) dot.classList.add('completed');
+                dot.textContent = i + 1;
+                dot.onclick = () => displayQuestion(i);
+                grid.appendChild(dot);
+            });
+        }
+
+        function displayQuestion(idx) {
+            appState.currentIndex = idx;
+            const question = appState.testData[idx];
+
+            document.getElementById('questionProgress').textContent = `Вопрос ${idx + 1} / ${appState.testData.length}`;
+            document.getElementById('textQuestion').textContent = question.text;
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            question.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'option-item';
+                
+                if (appState.reviewActive) {
+                    if (opt.isCorrect) div.classList.add('correct-ans');
+                    if (appState.userAnswers[idx] === i && !opt.isCorrect) div.classList.add('wrong-ans');
+                } else {
+                    if (appState.userAnswers[idx] === i) div.classList.add('selected');
+                    div.onclick = () => selectOption(i);
+                }
+
+                div.textContent = opt.text;
+                container.appendChild(div);
+            });
+
+            // Update grid dots
+            document.querySelectorAll('.nav-dot').forEach((d, i) => {
+                d.classList.remove('current');
+                if (i === idx) d.classList.add('current');
+            });
+        }
+
+        function selectOption(optIdx) {
+            appState.userAnswers[appState.currentIndex] = optIdx;
+            syncCache();
+            buildNavigationGrid();
+            displayQuestion(appState.currentIndex);
+
+            // Auto-next delay
+            setTimeout(() => {
+                if (appState.currentIndex < appState.testData.length - 1) {
+                    displayQuestion(appState.currentIndex + 1);
+                }
+            }, 350);
+        }
+
+        function startGlobalTimer() {
+            if (appState.timerClock) clearInterval(appState.timerClock);
+            appState.timerClock = setInterval(() => {
+                appState.secondsLeft--;
+                const m = Math.floor(appState.secondsLeft / 60);
+                const s = appState.secondsLeft % 60;
+                document.getElementById('displayTimer').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+                
+                if (appState.secondsLeft <= 0) {
+                    clearInterval(appState.timerClock);
+                    validateAndFinish();
+                }
+            }, 1000);
+        }
+
+        async function validateAndFinish() {
+            const answeredCount = Object.keys(appState.userAnswers).length;
+            if (answeredCount < appState.testData.length && appState.secondsLeft > 0) {
+                if (!confirm(`Вы ответили не на все вопросы (${answeredCount}/${appState.testData.length}). Завершить принудительно?`)) return;
+            }
+
+            clearInterval(appState.timerClock);
+            let score = 0;
+            appState.testData.forEach((q, i) => {
+                if (appState.userAnswers[i] !== undefined && q.options[appState.userAnswers[i]].isCorrect) {
+                    score++;
+                }
+            });
+
+            // Save to DB
+            try {
+                await appState.db.collection("test_results").add({
+                    student: appState.sessionUser.login,
+                    name: appState.sessionUser.name,
+                    subject: appState.sessionUser.subject,
+                    score: score,
+                    total: appState.testData.length,
+                    timestamp: new Date(),
+                    device: appState.deviceToken
+                });
+            } catch (e) { console.error("History Save Error:", e); }
+
+            showFinalResults(score);
+        }
+
+        function showFinalResults(score) {
+            appState.lastScore = score;
+            document.getElementById('quizSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            document.getElementById('finalPoints').textContent = score;
+
+            const percent = (score / appState.testData.length) * 100;
+            let msg = "Хороший результат!";
+            if (percent >= 90) msg = "Превосходно! Вы готовы к экзамену.";
+            else if (percent < 50) msg = "Нужно больше практики.";
+
+            document.getElementById('resultComment').textContent = msg;
+        }
+
+        /**
+         * UTILS & ACTIONS
+         */
+        function startReview() {
+            appState.reviewActive = true;
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('quizSection').classList.remove('hidden');
+            document.getElementById('submitTestBtn').classList.add('hidden');
+            document.getElementById('exitReviewBtn').classList.remove('hidden');
+            displayQuestion(0);
+        }
+
+        function closeReview() {
+            appState.reviewActive = false;
+            document.getElementById('quizSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
+            document.getElementById('submitTestBtn').classList.remove('hidden');
+            document.getElementById('exitReviewBtn').classList.add('hidden');
+        }
+
+        async function restartCurrent() {
+            appState.userAnswers = {};
+            appState.secondsLeft = 30 * 60;
+            appState.reviewActive = false;
+            syncCache();
+            launchQuizUI();
+        }
+
+        async function newTest() {
+            appState.userAnswers = {};
+            appState.secondsLeft = 30 * 60;
+            appState.reviewActive = false;
+            localStorage.removeItem(`cache_${appState.sessionUser.login}_${appState.sessionUser.subject}`);
+            await loadQuestionsBatch();
+            launchQuizUI();
+        }
+
+        async function exitApp() {
+            if (confirm("Выйти из системы? Сессия на этом устройстве будет закрыта.")) {
+                await appState.db.collection("allowed_users").doc(appState.sessionUser.login).update({ activeSession: null });
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function goForward() { if (appState.currentIndex < appState.testData.length - 1) displayQuestion(appState.currentIndex + 1); }
+        function goBack() { if (appState.currentIndex > 0) displayQuestion(appState.currentIndex - 1); }
+
+        function throwError(m) {
+            const el = document.getElementById('authErrorMessage');
+            el.textContent = m;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function sendReport() {
+            const msg = prompt("Опишите проблему в этом вопросе:");
+            if (msg && appState.db) {
+                appState.db.collection("reports").add({
+                    user: appState.sessionUser.login,
+                    q_text: appState.testData[appState.currentIndex].text,
+                    report: msg,
+                    date: new Date()
+                });
+                alert("Спасибо! Сообщение отправлено.");
+            }
+        }
+    </script>
 </body>
 </html>
