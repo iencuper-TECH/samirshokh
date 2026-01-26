@@ -547,7 +547,7 @@ autocomplete="off">
 </button>
 </div>
 
-<div class="navigation">
+<div class="navigation" id="quizNav">
 <button class="btn" style="background: #9ca3af;" onclick="prevQuestion()">
 <i class="fas fa-arrow-left"></i> Назад
 </button>
@@ -558,6 +558,10 @@ autocomplete="off">
 
 <button id="finishBtn" class="btn btn-success" style="margin: 15px; border-radius: 10px;" onclick="finishTest()">
 <i class="fas fa-flag-checkered"></i> Завершить тест
+</button>
+
+<button id="backToMenuBtn" class="btn btn-warning hidden" style="margin: 15px; border-radius: 10px;" onclick="returnToResults()">
+<i class="fas fa-undo"></i> Вернуться в меню результатов
 </button>
 </div>
 <div id="resultScreen" class="card hidden">
@@ -571,16 +575,16 @@ autocomplete="off">
 <div class="result-message" id="resultMessage"></div>
 
 <div class="result-actions">
-<button class="btn" onclick="reviewMode()">
-<i class="fas fa-chart-bar"></i> Анализ ошибок
+<button class="btn" style="background: #6b7280;" onclick="reviewMode()">
+<i class="fas fa-glasses"></i> Анализ ошибок
 </button>
 
 <button class="btn btn-success" onclick="retrySameTest()">
-<i class="fas fa-redo"></i> Пересдать этот вариант
+<i class="fas fa-redo"></i> Решить этот вариант заново
 </button>
 
-<button class="btn btn-warning" onclick="newTestSameSubject()">
-<i class="fas fa-plus-circle"></i> Новый тест по предмету
+<button class="btn btn-warning" onclick="startNewRandomTest()">
+<i class="fas fa-random"></i> Новый тест (другие вопросы)
 </button>
 
 <button class="btn btn-danger" onclick="logout()">
@@ -616,6 +620,7 @@ let currentTestId = null;
 let db = null;
 let currentSessionId = null;
 let deviceId = null;
+
 // Инициализация Firebase
 function initFirebase() {
 if (typeof firebase !== 'undefined' && window.firebaseConfig) {
@@ -631,6 +636,7 @@ return false;
 }
 return false;
 }
+
 // Генерация уникального ID устройства
 function generateDeviceId() {
 const sources = [
@@ -649,6 +655,7 @@ hash += source.charCodeAt(i).toString(36);
 
 return 'dev_' + hash.substr(0, 20);
 }
+
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
 deviceId = localStorage.getItem('device_id') || generateDeviceId();
@@ -662,6 +669,7 @@ showLoginError('Режим оффлайн. Некоторые функции м�
 
 checkActiveSession();
 });
+
 // Проверка активной сессии
 function checkActiveSession() {
 const activeSession = localStorage.getItem('active_session');
@@ -702,10 +710,12 @@ console.error('Ошибка проверки сессии:', e);
 
 clearExpiredSessions();
 }
+
 // Очистка просроченных сессий
 function clearExpiredSessions() {
 localStorage.removeItem('active_session');
 }
+
 // Показать ошибку входа
 function showLoginError(message) {
 const errorDiv = document.getElementById('loginError');
@@ -716,10 +726,11 @@ setTimeout(() => {
 errorDiv.classList.remove('show');
 }, 5000);
 }
+
 // Проверка логина в базе данных
 async function checkLoginAccess(login) {
 if (!db) {
-// Оффлайн режим - демо доступ
+// Оффлайн режим
 const demoLogins = ['student123', 'user123', 'testuser'];
 if (demoLogins.includes(login)) {
 return { allowed: true, userData: { approved: true } };
@@ -728,7 +739,6 @@ return { allowed: false, reason: 'Логин не найден (оффлайн)'
 }
 
 try {
-// ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем в коллекции "allowed_users"
 const userDoc = await db.collection("allowed_users").doc(login).get();
 
 if (userDoc.exists) {
@@ -764,6 +774,7 @@ console.error('Ошибка проверки логина:', error);
 return { allowed: false, reason: 'Ошибка соединения' };
 }
 }
+
 // Обновление информации о сессии
 async function updateSessionInfo(login, startSession = true) {
 if (!db) return;
@@ -782,7 +793,6 @@ updateData.activeSession = null;
 updateData.sessionTimestamp = null;
 }
 
-// ИСПРАВЛЕНО: Используем коллекцию "allowed_users"
 await db.collection("allowed_users").doc(login).update(updateData);
 return true;
 } catch (error) {
@@ -790,6 +800,7 @@ console.error('Ошибка обновления сессии:', error);
 return false;
 }
 }
+
 // Функция входа
 async function tryLogin(event) {
 event.preventDefault();
@@ -870,12 +881,12 @@ btn.disabled = false;
 btn.innerHTML = originalText;
 }
 }
-// Загрузка вопросов - ИСПРАВЛЕННАЯ ВЕРСИЯ
+
+// Загрузка вопросов (проверка сохраненных или генерация новых)
 async function loadQuestions() {
 const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
 const savedTest = localStorage.getItem(storageKey);
 
-// ИСПРАВЛЕНИЕ: Если сохраненный тест есть, используем его
 if (savedTest) {
 try {
 const parsed = JSON.parse(savedTest);
@@ -898,63 +909,58 @@ console.log('Ошибка чтения сохраненного теста:', e)
 await generateQuestionsForSubject();
 console.log('Сгенерирован новый тест, вопросов:', questions.length);
 }
-// Генерация вопросов по предмету - ТЕПЕРЬ С ЗАГРУЗКОЙ ИЗ БД
+
+// Генерация вопросов по предмету (СЛУЧАЙНЫЕ)
 async function generateQuestionsForSubject() {
-    questions = [];
-    let dbQuestions = [];
+questions = [];
+let dbQuestions = [];
 
-    // 1. Пытаемся забрать вопросы из Firebase
-    try {
-        const snapshot = await db.collection('questions')
-            .where('subject', '==', currentUser.subject)
-            .get();
+try {
+const snapshot = await db.collection('questions')
+.where('subject', '==', currentUser.subject)
+.get();
 
-        // 2. Если в базе ПУСТО (snapshot.empty), то ругаемся и выходим
-        if (snapshot.empty) {
-            alert('❌ ОШИБКА: В базе данных нет вопросов по предмету: ' + currentUser.subject);
-            location.reload(); // Перезагружаем на логин
-            return;
-        }
-
-        // 3. Если вопросы есть, раскладываем их в наш список
-        snapshot.forEach(doc => {
-            let q = doc.data();
-            // Перемешиваем варианты ответов (чтобы не всегда А был верным)
-            let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
-            opts.sort(() => Math.random() - 0.5);
-
-            dbQuestions.push({
-                text: q.text,
-                shuffledOptions: opts,
-                correctIndex: opts.findIndex(o => o.isCorrect)
-            });
-        });
-
-        // 4. Перемешиваем сами вопросы и берем максимум 30 штук
-        questions = dbQuestions.sort(() => Math.random() - 0.5).slice(0, 30);
-        
-        // 5. Сохраняем "слепок" теста в память браузера (чтобы не пропал при обновлении)
-        localStorage.setItem(`test_${currentUser.login}_${currentUser.subject}`, JSON.stringify({
-            questions: questions,
-            answers: {},
-            testId: currentTestId,
-            timestamp: new Date().getTime(),
-            subject: currentUser.subject
-        }));
-
-        console.log("✅ Успешно загружено вопросов из базы:", questions.length);
-
-    } catch (e) {
-        console.error('Ошибка загрузки:', e);
-        alert('Критическая ошибка базы: ' + e.message);
-    }
+if (snapshot.empty) {
+alert('❌ ОШИБКА: В базе данных нет вопросов по предмету: ' + currentUser.subject);
+return;
 }
+
+snapshot.forEach(doc => {
+let q = doc.data();
+let opts = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
+opts.sort(() => Math.random() - 0.5);
+
+dbQuestions.push({
+text: q.text,
+shuffledOptions: opts,
+correctIndex: opts.findIndex(o => o.isCorrect)
+});
+});
+
+// КЛЮЧЕВОЙ МОМЕНТ: Тщательное перемешивание для нового теста
+questions = dbQuestions.sort(() => Math.random() - 0.5).slice(0, 30);
+
+// Сохраняем в память
+localStorage.setItem(`test_${currentUser.login}_${currentUser.subject}`, JSON.stringify({
+questions: questions,
+answers: {},
+testId: currentTestId,
+timestamp: new Date().getTime(),
+subject: currentUser.subject
+}));
+
+console.log("✅ Успешно загружено НОВЫХ случайных вопросов:", questions.length);
+
+} catch (e) {
+console.error('Ошибка загрузки:', e);
+}
+}
+
 // Рендеринг сетки вопросов
 function renderQuestionGrid() {
 const grid = document.getElementById('qGrid');
 grid.innerHTML = '';
 
-// Показываем столько ячеек, сколько загрузилось вопросов
 for (let i = 0; i < questions.length; i++) {
 const item = document.createElement('div');
 item.className = 'grid-item';
@@ -968,6 +974,7 @@ item.classList.add('done');
 grid.appendChild(item);
 }
 }
+
 // Показать вопрос
 function showQuestion(index) {
 if (index < 0 || index >= questions.length) return;
@@ -987,6 +994,7 @@ button.className = 'option';
 button.textContent = option.text;
 
 if (isReviewMode) {
+button.disabled = true; // Блокируем клики в режиме просмотра
 if (option.isCorrect) {
 button.classList.add('correct');
 }
@@ -1003,7 +1011,6 @@ button.onclick = () => selectAnswer(optionIndex);
 optionsArea.appendChild(button);
 });
 
-// Обновляем сетку
 document.querySelectorAll('.grid-item').forEach((item, i) => {
 item.classList.remove('active');
 item.classList.toggle('done', answers[i] !== undefined);
@@ -1013,39 +1020,40 @@ item.classList.add('active');
 }
 });
 }
+
 // Выбор ответа
 function selectAnswer(optionIndex) {
 if (isReviewMode) return;
 
 answers[currentQuestionIndex] = optionIndex;
 
-// Обновляем сетку
 const gridItem = document.querySelector(`.grid-item:nth-child(${currentQuestionIndex + 1})`);
 if (gridItem) {
 gridItem.classList.add('done');
 }
 
-// Автоматический переход к следующему вопросу через 0.5 секунды
 setTimeout(() => {
 if (currentQuestionIndex < questions.length - 1) {
 showQuestion(currentQuestionIndex + 1);
 }
 }, 500);
 }
-// Следующий вопрос
+
+// Навигация
 function nextQuestion() {
 if (currentQuestionIndex < questions.length - 1) {
 showQuestion(currentQuestionIndex + 1);
 } else {
-alert('Это последний вопрос!');
+// Если это последний вопрос, можно предложить завершить
 }
 }
-// Предыдущий вопрос
+
 function prevQuestion() {
 if (currentQuestionIndex > 0) {
 showQuestion(currentQuestionIndex - 1);
 }
 }
+
 // Таймер
 function startTimer() {
 clearInterval(timerInterval);
@@ -1063,12 +1071,14 @@ finishTest();
 }
 }, 1000);
 }
+
 function updateTimerDisplay() {
 const minutes = Math.floor(timeLeft / 60);
 const seconds = timeLeft % 60;
 document.getElementById('timer').textContent =
 `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 }
+
 // Завершение теста
 async function finishTest() {
 clearInterval(timerInterval);
@@ -1085,6 +1095,7 @@ correctCount++;
 await saveTestResults(correctCount);
 showResults(correctCount);
 }
+
 // Сохранение результатов
 async function saveTestResults(score) {
 const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
@@ -1120,6 +1131,7 @@ console.error('Ошибка сохранения результатов:', error
 }
 }
 }
+
 // Показать результаты
 function showResults(score) {
 document.getElementById('quizScreen').classList.add('hidden');
@@ -1142,20 +1154,38 @@ message = 'Попробуйте еще раз. Изучите материал �
 document.getElementById('resultMessage').innerHTML = `
 ${message}<br><br>
 <strong>${score} из ${questions.length} правильных ответов (${percentage}%)</strong><br>
-Ваш результат сохранен.
+Выберите действие ниже:
 `;
 }
-// Режим просмотра ошибок
+
+// ------------------------------------------------------------
+// НОВАЯ ЛОГИКА КНОПОК
+// ------------------------------------------------------------
+
+// 1. Режим просмотра ошибок
 function reviewMode() {
 isReviewMode = true;
 document.getElementById('resultScreen').classList.add('hidden');
 document.getElementById('quizScreen').classList.remove('hidden');
-document.getElementById('finishBtn').style.display = 'none';
-document.getElementById('reportBtn').style.display = 'none';
-document.querySelector('.navigation').style.display = 'none';
+
+// Скрываем кнопки прохождения теста, показываем кнопку возврата
+document.getElementById('finishBtn').classList.add('hidden');
+document.getElementById('backToMenuBtn').classList.remove('hidden');
+document.getElementById('reportBtn').classList.add('hidden');
+
+// Навигацию оставляем
+document.getElementById('quizNav').style.display = 'flex';
+
 showQuestion(0);
 }
-// Повтор теста
+
+// Кнопка возврата из режима просмотра ошибок в меню результатов
+function returnToResults() {
+document.getElementById('quizScreen').classList.add('hidden');
+document.getElementById('resultScreen').classList.remove('hidden');
+}
+
+// 2. Пересдать ЭТОТ ЖЕ вариант (вопросы те же, ответы сброшены)
 function retrySameTest() {
 answers = {};
 timeLeft = 30 * 60;
@@ -1163,29 +1193,69 @@ isReviewMode = false;
 
 document.getElementById('resultScreen').classList.add('hidden');
 document.getElementById('quizScreen').classList.remove('hidden');
-document.getElementById('finishBtn').style.display = 'block';
-document.getElementById('reportBtn').style.display = 'block';
-document.querySelector('.navigation').style.display = 'flex';
 
+// Возвращаем стандартные кнопки
+document.getElementById('finishBtn').classList.remove('hidden');
+document.getElementById('backToMenuBtn').classList.add('hidden');
+document.getElementById('reportBtn').classList.remove('hidden');
+document.getElementById('quizNav').style.display = 'flex';
+
+renderQuestionGrid(); // Сбрасываем цвета в сетке
 showQuestion(0);
 startTimer();
 }
-// Новый тест по тому же предмету
-function newTestSameSubject() {
+
+// 3. НОВЫЙ тест по тому же предмету (НЕ выходит из аккаунта, генерирует НОВЫЕ вопросы)
+async function startNewRandomTest() {
+const btn = document.querySelector('.btn-warning');
+const oldText = btn.innerHTML;
+btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Генерация нового варианта...';
+btn.disabled = true;
+
+// 1. Очищаем сохраненный тест в памяти (чтобы loadQuestions не подтянул старый)
 const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
 localStorage.removeItem(storageKey);
-location.reload();
+
+// 2. Сбрасываем переменные
+answers = {};
+currentQuestionIndex = 0;
+isReviewMode = false;
+currentTestId = Date.now().toString(36); // Новый ID теста
+
+// 3. Генерируем НОВЫЕ вопросы из БД (они там перемешиваются случайно)
+await generateQuestionsForSubject();
+
+// 4. Перезапускаем интерфейс
+document.getElementById('resultScreen').classList.add('hidden');
+document.getElementById('quizScreen').classList.remove('hidden');
+
+// Возвращаем кнопки в норму
+document.getElementById('finishBtn').classList.remove('hidden');
+document.getElementById('backToMenuBtn').classList.add('hidden');
+document.getElementById('reportBtn').classList.remove('hidden');
+
+// Восстанавливаем кнопку меню (на всякий случай)
+btn.innerHTML = oldText;
+btn.disabled = false;
+
+renderQuestionGrid();
+showQuestion(0);
+startTimer();
 }
-// Выход
+
+// 4. Полный выход из системы
 async function logout() {
+if(!confirm('Вы уверены, что хотите выйти из аккаунта?')) return;
+
 localStorage.removeItem('active_session');
 
 if (db && currentUser.login) {
 await updateSessionInfo(currentUser.login, false);
 }
 
-location.reload();
+location.reload(); // Перезагружаем страницу, чтобы вернуться на логин
 }
+
 // Сообщить об ошибке
 function reportError() {
 const currentQuestion = questions[currentQuestionIndex];
