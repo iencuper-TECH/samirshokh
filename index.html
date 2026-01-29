@@ -6,6 +6,7 @@
 <title>RIMUS — Your Session Assistant</title>
 <link rel="icon" type="image/png" href="https://i.imgur.com/8X8Zg1y.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="config.js"></script>
 <style>
 :root {
     --primary: #0A1F35;    /* Темно-синий из фона логотипа */
@@ -476,21 +477,26 @@ placeholder="Иванов Иван"
 autocomplete="off">
 </div>
 
+<div style="display: flex; gap: 10px; margin-bottom: 18px;">
+<div style="flex: 1;">
+<label for="facultySelect"><i class="fas fa-university"></i> Факультет</label>
+<select id="facultySelect" class="form-control" onchange="updateSubjectList()">
+<option value="curative">Лечебное дело</option>
+<option value="stomatology">Стоматология</option>
+</select>
+</div>
+<div style="width: 120px;">
+<label for="semesterSelect"><i class="fas fa-clock"></i> Семестр</label>
+<select id="semesterSelect" class="form-control" onchange="updateSubjectList()">
+<option value="1">1 Сем.</option>
+<option value="2">2 Сем.</option>
+</select>
+</div>
+</div>
+
 <div class="form-group">
 <label for="subjectSelect"><i class="fas fa-book"></i> Предмет тестирования</label>
 <select id="subjectSelect" class="form-control">
-<option value="">-- Выберите предмет --</option>
-<option value="anatomy">Анатомия</option>
-<option value="biology">Биология</option>
-<option value="chemistry">Химия</option>
-<option value="physics">Физика</option>
-<option value="history">История</option>
-<option value="english">Английский язык</option>
-<option value="latin">Латинский язык</option>
-<option value="medical">Медицинская профессия</option>
-<option value="uzbek">Узбекский язык</option>
-<option value="histology">Гистология</option>
-<option value="philosophy">Философия</option>
 </select>
 </div>
 
@@ -511,7 +517,7 @@ autocomplete="off">
 </div>
 <div id="blockedScreen" class="card hidden">
 <div class="header" style="background: var(--danger);">
-<h1> ⛔   Доступ   ограничен </h1>
+<h1> ⛔    Доступ    ограничен </h1>
 <p>Обнаружена попытка входа с другого устройства</p>
 </div>
 <div class="content">
@@ -569,7 +575,7 @@ autocomplete="off">
 </div>
 <div id="resultScreen" class="card hidden">
 <div class="header">
-<h1> 🎉  Результаты теста</h1>
+<h1> 🎉   Результаты теста</h1>
 <p>Тестирование завершено</p>
 </div>
 
@@ -600,16 +606,6 @@ autocomplete="off">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-<script>
-window.firebaseConfig = {
-apiKey: "AIzaSyA9zA0LVrDEvIPtlUbJHenrgYo2EoJubyw",
-authDomain: "test-by-samirshokh.firebaseapp.com",
-projectId: "test-by-samirshokh",
-storageBucket: "test-by-samirshokh.firebasestorage.app",
-messagingSenderId: "105940641906",
-appId: "1:105940641906:web:effee678673ae954b53aeb"
-};
-</script>
 <script>
 // Глобальные переменные
 let questions = [];
@@ -678,8 +674,49 @@ if (!initFirebase()) {
 showLoginError('Режим оффлайн. Некоторые функции могут быть недоступны.');
 }
 
+updateSubjectList(); // Инициализация списка предметов
 checkActiveSession();
 });
+
+// ОБНОВЛЕНИЕ СПИСКА ПРЕДМЕТОВ (Новая функция)
+function updateSubjectList() {
+const faculty = document.getElementById('facultySelect').value;
+const semester = document.getElementById('semesterSelect').value;
+const select = document.getElementById('subjectSelect');
+
+// Базовые предметы (одинаковы для всех)
+const baseSubjects = [
+    {val: 'anatomy', text: 'Анатомия'},
+    {val: 'biology', text: 'Биология'},
+    {val: 'chemistry', text: 'Химия'},
+    {val: 'physics', text: 'Физика'},
+    {val: 'history', text: 'История'},
+    {val: 'english', text: 'Английский язык'},
+    {val: 'latin', text: 'Латинский язык'},
+    {val: 'medical', text: 'Медицинская профессия'},
+    {val: 'uzbek', text: 'Узбекский язык'},
+    {val: 'histology', text: 'Гистология'},
+    {val: 'philosophy', text: 'Философия'}
+];
+
+select.innerHTML = '<option value="">-- Выберите предмет --</option>';
+
+// Добавляем базовые
+baseSubjects.forEach(sub => {
+    const opt = document.createElement('option');
+    opt.value = sub.val;
+    opt.textContent = sub.text;
+    select.appendChild(opt);
+});
+
+// Если 2 семестр - добавляем Информатику
+if (semester === '2') {
+    const opt = document.createElement('option');
+    opt.value = 'informatics';
+    opt.textContent = 'Информатика';
+    select.appendChild(opt);
+}
+}
 
 // Проверка активной сессии
 function checkActiveSession() {
@@ -695,7 +732,10 @@ if (hoursDiff < 12) {
 currentUser = session.user;
 currentTestId = session.testId;
 
-const savedQuestions = localStorage.getItem(`test_${session.user.login}_${session.user.subject}`);
+// Включаем нужный предмет в ключ (с учетом факультета и семестра)
+const storageKey = `test_${session.user.login}_${session.user.subject}_${session.user.faculty}_${session.user.semester}`;
+const savedQuestions = localStorage.getItem(storageKey);
+
 if (savedQuestions) {
 try {
 const parsed = JSON.parse(savedQuestions);
@@ -815,10 +855,12 @@ return false;
 // Функция входа
 async function tryLogin(event) {
 event.preventDefault();
-console.log(" 🟢  ПОПЫТКА ВХОДА");
+console.log(" 🟢   ПОПЫТКА ВХОДА");
 
 const login = document.getElementById('loginInput').value.trim();
 const name = document.getElementById('nameInput').value.trim();
+const faculty = document.getElementById('facultySelect').value;
+const semester = document.getElementById('semesterSelect').value;
 const subject = document.getElementById('subjectSelect').value;
 const btn = event.currentTarget;
 
@@ -862,6 +904,8 @@ currentUser = {
 login: login,
 name: name,
 subject: subject,
+faculty: faculty, // Сохраняем факультет
+semester: semester, // Сохраняем семестр
 deviceId: deviceId
 };
 
@@ -883,7 +927,7 @@ renderQuestionGrid();
 showQuestion(0);
 startTimer();
 
-console.log(" 🟢  ТЕСТ ЗАПУЩЕН для пользователя:", login);
+console.log(" 🟢   ТЕСТ ЗАПУЩЕН для пользователя:", login);
 
 } catch (error) {
 console.error('Ошибка при входе:', error);
@@ -895,7 +939,7 @@ btn.innerHTML = originalText;
 
 // Загрузка вопросов (проверка сохраненных или генерация новых)
 async function loadQuestions() {
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+const storageKey = `test_${currentUser.login}_${currentUser.subject}_${currentUser.faculty}_${currentUser.semester}`;
 const savedTest = localStorage.getItem(storageKey);
 
 if (savedTest) {
@@ -921,53 +965,85 @@ await generateQuestionsForSubject();
 console.log('Сгенерирован новый тест, вопросов:', questions.length);
 }
 
-// Генерация вопросов по предмету (СЛУЧАЙНЫЕ)
+// Генерация вопросов по предмету (СЛУЧАЙНЫЕ + ФИЛЬТРАЦИЯ ПО ФАКУЛЬТЕТУ)
 async function generateQuestionsForSubject() {
 questions = [];
 let dbQuestions = [];
 
 try {
+// 1. Грузим ВСЕ вопросы по предмету
 const snapshot = await db.collection('questions')
 .where('subject', '==', currentUser.subject)
 .get();
 
 if (snapshot.empty) {
-alert('❌ ОШИБКА: В базе данных нет вопросов по предмету: ' + currentUser.subject);
+alert(`❌ В базе данных пока нет вопросов по предмету "${currentUser.subject}". Обратитесь к администратору.`);
 return;
 }
 
+// 2. Фильтруем на клиенте (так надежнее для смешанных данных)
 snapshot.forEach(doc => {
 let q = doc.data();
-// --- ИСПРАВЛЕНИЕ: Очистка текста опций от мусора ---
-let opts = q.options.map((text, idx) => ({ 
-    text: cleanText(text), 
-    isCorrect: idx === q.correct 
-}));
-opts.sort(() => Math.random() - 0.5);
+let includeQuestion = false;
 
-dbQuestions.push({
-text: cleanText(q.text), // --- ИСПРАВЛЕНИЕ: Очистка текста вопроса ---
-shuffledOptions: opts,
-correctIndex: opts.findIndex(o => o.isCorrect)
+// === ЛОГИКА ФИЛЬТРАЦИИ ===
+
+// Сценарий 1: Лечебное дело - 1 семестр
+if (currentUser.faculty === 'curative' && currentUser.semester === '1') {
+    // Берем вопросы, где (нет факультета ИЛИ факультет = леч) И (нет семестра ИЛИ семестр = 1)
+    // Это включает СТАРЫЕ вопросы (у них нет полей)
+    const isCurative = (!q.faculty || q.faculty === 'curative');
+    const isSem1 = (!q.semester || q.semester === '1');
+    if (isCurative && isSem1) includeQuestion = true;
+}
+// Сценарий 2: Все остальные варианты (Стомат, или Леч 2 сем)
+else {
+    // Берем ТОЛЬКО если строго совпадает факультет и семестр
+    if (q.faculty === currentUser.faculty && q.semester === currentUser.semester) {
+        includeQuestion = true;
+    }
+}
+
+if (includeQuestion) {
+    let opts = q.options.map((text, idx) => ({ 
+        text: cleanText(text), 
+        isCorrect: idx === q.correct 
+    }));
+    opts.sort(() => Math.random() - 0.5);
+
+    dbQuestions.push({
+        text: cleanText(q.text),
+        shuffledOptions: opts,
+        correctIndex: opts.findIndex(o => o.isCorrect)
+    });
+}
 });
-});
+
+if (dbQuestions.length === 0) {
+alert(`⚠️ Для выбранного факультета (${currentUser.faculty}) и семестра (${currentUser.semester}) тестов по этому предмету пока нет.`);
+return;
+}
 
 // КЛЮЧЕВОЙ МОМЕНТ: Тщательное перемешивание для нового теста
 questions = dbQuestions.sort(() => Math.random() - 0.5).slice(0, 30);
 
-// Сохраняем в память
-localStorage.setItem(`test_${currentUser.login}_${currentUser.subject}`, JSON.stringify({
+// Сохраняем в память (с учетом факультета в ключе)
+const storageKey = `test_${currentUser.login}_${currentUser.subject}_${currentUser.faculty}_${currentUser.semester}`;
+localStorage.setItem(storageKey, JSON.stringify({
 questions: questions,
 answers: {},
 testId: currentTestId,
 timestamp: new Date().getTime(),
-subject: currentUser.subject
+subject: currentUser.subject,
+faculty: currentUser.faculty,
+semester: currentUser.semester
 }));
 
 console.log("✅ Успешно загружено НОВЫХ случайных вопросов:", questions.length);
 
 } catch (e) {
 console.error('Ошибка загрузки:', e);
+alert('Ошибка при загрузке вопросов: ' + e.message);
 }
 }
 
@@ -1113,14 +1189,16 @@ showResults(correctCount);
 
 // Сохранение результатов
 async function saveTestResults(score) {
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+const storageKey = `test_${currentUser.login}_${currentUser.subject}_${currentUser.faculty}_${currentUser.semester}`;
 const testData = {
 questions: questions,
 answers: answers,
 score: score,
 testId: currentTestId,
 timestamp: new Date().getTime(),
-subject: currentUser.subject
+subject: currentUser.subject,
+faculty: currentUser.faculty,
+semester: currentUser.semester
 };
 
 localStorage.setItem(storageKey, JSON.stringify(testData));
@@ -1131,6 +1209,8 @@ await db.collection("test_results").add({
 studentLogin: currentUser.login,
 studentName: currentUser.name,
 subject: currentUser.subject,
+faculty: currentUser.faculty,
+semester: currentUser.semester,
 score: score,
 total: questions.length,
 percentage: Math.round((score / questions.length) * 100),
@@ -1228,7 +1308,7 @@ btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Генерация но�
 btn.disabled = true;
 
 // 1. Очищаем сохраненный тест в памяти (чтобы loadQuestions не подтянул старый)
-const storageKey = `test_${currentUser.login}_${currentUser.subject}`;
+const storageKey = `test_${currentUser.login}_${currentUser.subject}_${currentUser.faculty}_${currentUser.semester}`;
 localStorage.removeItem(storageKey);
 
 // 2. Сбрасываем переменные
@@ -1285,6 +1365,7 @@ questionText: currentQuestion.text,
 reason: userReport,
 student: currentUser.login,
 studentName: currentUser.name,
+faculty: currentUser.faculty,
 date: new Date()
 });
 }
